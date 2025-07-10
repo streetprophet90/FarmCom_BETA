@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}Marketplace{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fas fa-store me-2"></i>Marketplace</h1>
+</div>
+
+<div class="row">
+    {% for listing in listings %}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-seedling me-2"></i>{{ listing.project.crops }}
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    {% if listing.is_organic %}
+                        <span class="badge bg-success me-2">Organic</span>
+                    {% endif %}
+                    <span class="badge bg-info">Fresh Harvest</span>
+                </div>
+                
+                <div class="mb-3">
+                    <strong><i class="fas fa-map-marker-alt me-1"></i>Source:</strong><br>
+                    <span>{{ listing.project.land.title }}</span>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <strong><i class="fas fa-dollar-sign me-1"></i>Price:</strong><br>
+                        <span class="text-success fs-5">${{ listing.price_per_unit }}/lb</span>
+                    </div>
+                    <div class="col-6">
+                        <strong><i class="fas fa-boxes me-1"></i>Available:</strong><br>
+                        <span class="text-primary">{{ listing.available_quantity }} lbs</span>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <strong><i class="fas fa-calendar me-1"></i>Harvest Date:</strong><br>
+                    <small>{{ listing.harvest_date|date:"F j, Y" }}</small>
+                </div>
+                
+                <div class="mt-auto">
+                    <button class="btn btn-success w-100" disabled>
+                        <i class="fas fa-shopping-cart me-2"></i>Purchase (Coming Soon)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fas fa-store fa-3x text-muted mb-3"></i>
+                <h4>No Listings Available</h4>
+                <p class="text-muted">No products are currently available in the marketplace.</p>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %} 

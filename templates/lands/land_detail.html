@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ land.title }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h1>{{ land.title }}</h1>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <h5>Land Information</h5>
+                <p><strong>Location:</strong> {{ land.location }}</p>
+                <p><strong>Size:</strong> {{ land.size }} acres</p>
+                <p><strong>Soil Type:</strong> {{ land.soil_type }}</p>
+                <p><strong>Water Source:</strong> {{ land.water_source }}</p>
+                <p><strong>Preferred Crops:</strong> {{ land.preferred_crops }}</p>
+                <p><strong>Listed:</strong> {{ land.date_listed|date:"F j, Y" }}</p>
+            </div>
+            <div class="col-md-6">
+                <h5>Description</h5>
+                <p>{{ land.description }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

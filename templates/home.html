@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+
+{% block title %}FarmCom - Home{% endblock %}
+
+{% block content %}
+<div class="jumbotron">
+    <h1 class="display-4"><i class="fas fa-seedling me-3"></i>Welcome to FarmCom</h1>
+    <p class="lead">Connecting landowners, farmers, and agricultural professionals for sustainable farming partnerships.</p>
+    <hr class="my-4">
+    <p>Join our platform to discover available lands, manage farming projects, and participate in the agricultural marketplace.</p>
+    <div class="d-flex gap-3 flex-wrap">
+        <a class="btn btn-success btn-lg" href="{% url 'land_list' %}" role="button">
+            <i class="fas fa-map-marked-alt me-2"></i>Browse Lands
+        </a>
+        <a class="btn btn-primary btn-lg" href="{% url 'project_list' %}" role="button">
+            <i class="fas fa-tractor me-2"></i>View Projects
+        </a>
+        <a class="btn btn-info btn-lg" href="{% url 'listing_list' %}" role="button">
+            <i class="fas fa-store me-2"></i>Marketplace
+        </a>
+    </div>
+</div>
+
+<!-- Stats Section -->
+<div class="row mb-5">
+    <div class="col-md-3">
+        <div class="card stats-card">
+            <div class="stats-number">{{ total_lands }}</div>
+            <div class="stats-label">Available Lands</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card">
+            <div class="stats-number">{{ total_projects }}</div>
+            <div class="stats-label">Active Projects</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card">
+            <div class="stats-number">{{ total_listings }}</div>
+            <div class="stats-label">Market Listings</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card">
+            <div class="stats-number">{{ total_users }}</div>
+            <div class="stats-label">Community Members</div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Lands and Projects -->
+{% if recent_lands or recent_projects %}
+<div class="row mb-5">
+    {% if recent_lands %}
+    <div class="col-md-6">
+        <h3><i class="fas fa-map-marked-alt me-2"></i>Recent Lands</h3>
+        <div class="list-group">
+            {% for land in recent_lands %}
+            <a href="{% url 'land_detail' land.id %}" class="list-group-item list-group-item-action">
+                <div class="d-flex w-100 justify-content-between">
+                    <h6 class="mb-1">{{ land.title }}</h6>
+                    <small>{{ land.size }} acres</small>
+                </div>
+                <p class="mb-1">{{ land.location }}</p>
+                <small class="text-muted">{{ land.preferred_crops }}</small>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if recent_projects %}
+    <div class="col-md-6">
+        <h3><i class="fas fa-tractor me-2"></i>Active Projects</h3>
+        <div class="list-group">
+            {% for project in recent_projects %}
+            <a href="{% url 'project_detail' project.id %}" class="list-group-item list-group-item-action">
+                <div class="d-flex w-100 justify-content-between">
+                    <h6 class="mb-1">{{ project.crops }}</h6>
+                    <small class="badge bg-success">{{ project.status }}</small>
+                </div>
+                <p class="mb-1">{{ project.land.title }}</p>
+                <small class="text-muted">{{ project.land.location }}</small>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endif %}
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="feature-icon">
+                    <i class="fas fa-map-marked-alt"></i>
+                </div>
+                <h5 class="card-title">For Landowners</h5>
+                <p class="card-text">List your land and connect with professional farmers to maximize your agricultural potential. Earn revenue while contributing to sustainable farming.</p>
+                <a href="{% url 'land_list' %}" class="btn btn-outline-success">Explore Lands</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="feature-icon">
+                    <i class="fas fa-tractor"></i>
+                </div>
+                <h5 class="card-title">For Farmers</h5>
+                <p class="card-text">Find available lands and manage your farming projects efficiently with our platform. Access resources and connect with landowners.</p>
+                <a href="{% url 'project_list' %}" class="btn btn-outline-primary">View Projects</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="feature-icon">
+                    <i class="fas fa-store"></i>
+                </div>
+                <h5 class="card-title">For Buyers</h5>
+                <p class="card-text">Purchase fresh, locally-grown produce directly from our farming community. Support local agriculture and get quality products.</p>
+                <a href="{% url 'listing_list' %}" class="btn btn-outline-info">Browse Market</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Call to Action -->
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="card bg-light">
+            <div class="card-body text-center">
+                <h3>Ready to Join Our Agricultural Community?</h3>
+                <p class="lead">Start your journey towards sustainable farming partnerships today.</p>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'profile' %}" class="btn btn-success btn-lg">View Your Profile</a>
+                {% else %}
+                    <a href="{% url 'register' %}" class="btn btn-success btn-lg me-3">Get Started</a>
+                    <a href="{% url 'login' %}" class="btn btn-outline-success btn-lg">Sign In</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

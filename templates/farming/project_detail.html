@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ project.crops }} - Project Details{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h1><i class="fas fa-seedling me-2"></i>{{ project.crops }}</h1>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-8">
+                <div class="mb-4">
+                    <span class="badge bg-{% if project.status == 'ACTIVE' %}success{% elif project.status == 'PLANNING' %}warning{% elif project.status == 'HARVESTED' %}info{% else %}secondary{% endif %} fs-6">
+                        {{ project.get_status_display }}
+                    </span>
+                </div>
+                
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h5><i class="fas fa-map-marker-alt me-2"></i>Land Information</h5>
+                        <p><strong>Land:</strong> {{ project.land.title }}</p>
+                        <p><strong>Location:</strong> {{ project.land.location }}</p>
+                        <p><strong>Size:</strong> {{ project.land.size }} acres</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h5><i class="fas fa-calendar me-2"></i>Project Timeline</h5>
+                        <p><strong>Start Date:</strong> {{ project.start_date|date:"F j, Y" }}</p>
+                        <p><strong>End Date:</strong> {{ project.end_date|date:"F j, Y"|default:"TBD" }}</p>
+                        <p><strong>Duration:</strong> 
+                            {% if project.end_date %}
+                                {{ project.start_date|timesince:project.end_date }}
+                            {% else %}
+                                {{ project.start_date|timesince }}
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h5><i class="fas fa-chart-line me-2"></i>Yield Information</h5>
+                        <p><strong>Estimated Yield:</strong> {{ project.estimated_yield }} lbs</p>
+                        <p><strong>Actual Yield:</strong> {{ project.actual_yield|default:"TBD" }} lbs</p>
+                        {% if project.actual_yield %}
+                            <p><strong>Performance:</strong> 
+                                {% if project.actual_yield >= project.estimated_yield %}
+                                    <span class="text-success">✓ Exceeded expectations</span>
+                                {% else %}
+                                    <span class="text-warning">Below expectations</span>
+                                {% endif %}
+                            </p>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <h5><i class="fas fa-users me-2"></i>Team</h5>
+                        <p><strong>Manager:</strong> {{ project.manager.get_full_name|default:project.manager.username }}</p>
+                        <p><strong>Workers:</strong> {{ project.workers.count }}</p>
+                        {% if project.workers.all %}
+                            <ul class="list-unstyled">
+                                {% for worker in project.workers.all %}
+                                    <li><i class="fas fa-user me-1"></i>{{ worker.get_full_name|default:worker.username }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-info-circle me-2"></i>Quick Info</h5>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Land Owner:</strong> {{ project.land.owner.get_full_name|default:project.land.owner.username }}</p>
+                        <p><strong>Soil Type:</strong> {{ project.land.soil_type }}</p>
+                        <p><strong>Water Source:</strong> {{ project.land.water_source }}</p>
+                        <p><strong>Organic:</strong> 
+                            {% if project.land.preferred_crops %}
+                                <span class="badge bg-success">Yes</span>
+                            {% else %}
+                                <span class="badge bg-secondary">No</span>
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

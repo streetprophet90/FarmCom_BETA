@@ -1,0 +1,171 @@
+{% extends 'base.html' %}
+
+{% block title %}Available Lands{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="fas fa-map-marked-alt me-2"></i>Available Lands</h1>
+    {% if user.is_authenticated %}
+        <a href="{% url 'add_land' %}" class="btn btn-success">
+            <i class="fas fa-plus me-2"></i>Add New Land
+        </a>
+    {% endif %}
+</div>
+
+<!-- Filter Section -->
+<div class="card mb-4 filter-card">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-filter me-2"></i>Filter Lands
+        </h5>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-2">
+                <label for="location" class="form-label">
+                    <i class="fas fa-map-marker-alt me-1"></i>Location
+                </label>
+                <select class="form-select" id="location" name="location">
+                    <option value="">All Locations</option>
+                    {% for loc in locations %}
+                        <option value="{{ loc }}" {% if loc == current_location %}selected{% endif %}>{{ loc }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="col-md-2">
+                <label for="soil_type" class="form-label">
+                    <i class="fas fa-layer-group me-1"></i>Soil Type
+                </label>
+                <select class="form-select" id="soil_type" name="soil_type">
+                    <option value="">All Soil Types</option>
+                    {% for soil in soil_types %}
+                        <option value="{{ soil }}" {% if soil == current_soil %}selected{% endif %}>{{ soil }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="col-md-2">
+                <label for="min_size" class="form-label">
+                    <i class="fas fa-ruler-combined me-1"></i>Min Size (acres)
+                </label>
+                <input type="number" class="form-control" id="min_size" name="min_size" 
+                       value="{{ current_min_size }}" min="0" step="0.1" placeholder="0">
+            </div>
+            
+            <div class="col-md-2">
+                <label for="max_size" class="form-label">
+                    <i class="fas fa-ruler-combined me-1"></i>Max Size (acres)
+                </label>
+                <input type="number" class="form-control" id="max_size" name="max_size" 
+                       value="{{ current_max_size }}" min="0" step="0.1" placeholder="1000">
+            </div>
+            
+            <div class="col-md-2">
+                <label for="crop_type" class="form-label">
+                    <i class="fas fa-seedling me-1"></i>Crop Type
+                </label>
+                <select class="form-select" id="crop_type" name="crop_type">
+                    <option value="">All Crops</option>
+                    {% for crop in crop_types %}
+                        <option value="{{ crop }}" {% if crop == current_crop %}selected{% endif %}>{{ crop }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="col-md-2 d-flex align-items-end">
+                <div class="d-grid gap-2 w-100">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search me-1"></i>Filter
+                    </button>
+                    <a href="{% url 'land_list' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times me-1"></i>Clear
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Results Summary -->
+{% if current_location or current_soil or current_min_size or current_max_size or current_crop %}
+<div class="alert alert-info mb-4">
+    <i class="fas fa-info-circle me-2"></i>
+    <strong>Filtered Results:</strong>
+    {% if current_location %}Location: {{ current_location }}{% endif %}
+    {% if current_soil %}
+        {% if current_location %} | {% endif %}Soil: {{ current_soil }}
+    {% endif %}
+    {% if current_min_size or current_max_size %}
+        {% if current_location or current_soil %} | {% endif %}Size: 
+        {% if current_min_size %}{{ current_min_size }}{% else %}0{% endif %} - 
+        {% if current_max_size %}{{ current_max_size }}{% else %}∞{% endif %} acres
+    {% endif %}
+    {% if current_crop %}
+        {% if current_location or current_soil or current_min_size or current_max_size %} | {% endif %}Crop: {{ current_crop }}
+    {% endif %}
+    <span class="badge bg-primary ms-2">{{ lands|length }} result{{ lands|length|pluralize }}</span>
+</div>
+{% endif %}
+
+<div class="row">
+    {% for land in lands %}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card land-card h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-map-marker-alt me-2"></i>{{ land.title }}
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <small class="text-muted">
+                        <i class="fas fa-location-dot me-1"></i>{{ land.location }}
+                    </small>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <strong><i class="fas fa-ruler-combined me-1"></i>Size:</strong><br>
+                        <span class="text-success">{{ land.size }} acres</span>
+                    </div>
+                    <div class="col-6">
+                        <strong><i class="fas fa-layer-group me-1"></i>Soil:</strong><br>
+                        <span>{{ land.soil_type }}</span>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <strong><i class="fas fa-seedling me-1"></i>Preferred Crops:</strong><br>
+                    <span class="text-muted">{{ land.preferred_crops }}</span>
+                </div>
+                <div class="mt-auto">
+                    <a href="{% url 'land_detail' land.pk %}" class="btn btn-primary w-100">
+                        <i class="fas fa-eye me-2"></i>View Details
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fas fa-map-marked-alt fa-3x text-muted mb-3"></i>
+                <h4>No Lands Found</h4>
+                <p class="text-muted">
+                    {% if current_location or current_soil or current_min_size or current_max_size or current_crop %}
+                        No lands match your current filters. Try adjusting your search criteria.
+                    {% else %}
+                        Check back later for new land listings or add your own land to the platform.
+                    {% endif %}
+                </p>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'add_land' %}" class="btn btn-success">
+                        <i class="fas fa-plus me-2"></i>List Your Land
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %} 
