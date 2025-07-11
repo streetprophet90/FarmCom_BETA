@@ -2,6 +2,19 @@
 
 A comprehensive Django-based web application that connects farmers, landowners, and agricultural investors in Ghana. FarmCom facilitates land sharing, farming project management, and crop marketplace operations.
 
+**FarmCom** is a project within **AHAJAH Creo**, dedicated to revolutionizing agricultural practices and community building in Ghana.
+
+## 🏢 About AHAJAH Creo
+
+**AHAJAH Creo** is a forward-thinking company committed to sustainable development and community empowerment through innovative technology solutions. Our mission is to bridge the gap between traditional agricultural practices and modern digital solutions.
+
+- **Website**: [www.ahajahcreo.org](https://www.ahajahcreo.org)
+- **Blog**: Read our latest insights on FarmCom and agricultural innovation
+- **Social Media**: Follow us for updates and community stories
+  - Instagram: [@ahajahcreo_](https://instagram.com/ahajahcreo_)
+  - Twitter: [@ahajahcreo_](https://twitter.com/ahajahcreo_)
+  - Facebook: [@ahajahcreo_](https://facebook.com/ahajahcreo_)
+
 ## 🇬🇭 Features
 
 ### 🏠 **User Management**
@@ -188,23 +201,29 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 👨‍💻 Author
 
-**StreetProphet90**
-- GitHub: [@streetprophet90](https://github.com/streetprophet90)
+**Harry Fynn Amoafo**
+- **Email**: [harryfynn@ahajahcreo.org](mailto:harryfynn@ahajahcreo.org)
+- **GitHub**: [@streetprophet90](https://github.com/streetprophet90)
+- **Company**: AHAJAH Creo
+- **Project**: FarmCom - Ghanaian Agricultural Community Platform
+
+## 🌐 Connect With Us
+
+- **Company Website**: [www.ahajahcreo.org](https://www.ahajahcreo.org)
+- **FarmCom Blog**: Read our latest insights and updates
+- **Social Media**:
+  - 📸 Instagram: [@ahajahcreo_](https://instagram.com/ahajahcreo_)
+  - 🐦 Twitter: [@ahajahcreo_](https://twitter.com/ahajahcreo_)
+  - 📘 Facebook: [@ahajahcreo_](https://facebook.com/ahajahcreo_)
 
 ## 🙏 Acknowledgments
 
 - Django community for the excellent framework
 - Bootstrap for the responsive design components
 - Ghanaian agricultural community for inspiration
-- All contributors and testers
-
-## 📞 Support
-
-For support and questions:
-- Create an issue on GitHub
-- Contact the development team
-- Check the documentation
+- AHAJAH Creo team for continuous support and innovation
+- All contributors and testers who help improve FarmCom
 
 ---
 
-**FarmCom** - Connecting Ghana's Agricultural Future 🌱🇬🇭 
+**FarmCom** - Empowering Ghanaian Agriculture Through Technology 🌱🇬🇭 
