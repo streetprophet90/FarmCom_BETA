@@ -37,3 +37,35 @@ class User(AbstractUser):
 
     def __str__(self):
         return f"{self.get_user_type_display()}: {self.username}"
+
+    # New: supervisor relationship for WORKERs (points to a FARMER)
+    supervisor = models.ForeignKey(
+        'self',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='supervised_workers',
+        limit_choices_to={'user_type': 'FARMER'},
+        help_text='The professional farmer supervising this worker (if applicable).'
+    )
+
+# New: ActivityLog model
+class ActivityLog(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='activity_logs')
+    action = models.CharField(max_length=100)
+    details = models.TextField(blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    confirmed = models.BooleanField(default=False)  # New: confirmation by farmer
+
+    def __str__(self):
+        return f"{self.user.username} - {self.action} at {self.timestamp.strftime('%Y-%m-%d %H:%M')}"
+
+# New: ImageUpload model
+class ImageUpload(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='image_uploads')
+    image = models.ImageField(upload_to='user_uploads/')
+    description = models.CharField(max_length=255, blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.image.name} at {self.timestamp.strftime('%Y-%m-%d %H:%M')}"

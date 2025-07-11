@@ -28,15 +28,12 @@ def custom_logout(request):
     return redirect('home')
 
 urlpatterns = [
-    path('', views.home, name='home'),
     path('admin/', admin.site.urls),
     path('accounts/', include('accounts.urls')),
-    path('accounts/login/', auth_views.LoginView.as_view(template_name='accounts/login.html'), name='login'),
-    path('accounts/logout/', custom_logout, name='logout'),
     path('lands/', include('lands.urls')),
     path('farming/', include('farming.urls')),
     path('marketplace/', include('marketplace.urls')),
-    path('payments/', include('payments.urls')),
+    path('', views.home, name='home'),
 ]
 
 # Serve media files during development

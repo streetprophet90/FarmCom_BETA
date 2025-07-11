@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>Professional Farmer Dashboard</h2>
+        <div>
+            <a href="{% url 'profile' %}" class="btn btn-outline-secondary me-2">View Profile</a>
+            <a href="{% url 'farmer_dashboard' %}" class="btn btn-primary">Dashboard</a>
+        </div>
+    </div>
+    <hr>
+    <!-- Top Row: Team Stats & Upload Form -->
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h4 class="card-title">Team Stats</h4>
+                    <ul class="list-group list-group-flush mb-3">
+                        <li class="list-group-item">Workers: {{ stats.worker_count }}</li>
+                        <li class="list-group-item">Total Uploads: {{ stats.total_uploads }}</li>
+                        <li class="list-group-item">Total Activities: {{ stats.total_activities }}</li>
+                    </ul>
+                    <h5>Workers</h5>
+                    <ul class="list-group">
+                        {% for worker in workers %}
+                        <li class="list-group-item">{{ worker.get_full_name }} ({{ worker.username }})</li>
+                        {% empty %}
+                        <li class="list-group-item">No workers assigned.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h4 class="card-title">Upload Image</h4>
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {{ img_form.as_p }}
+                        <button type="submit" name="upload_image" class="btn btn-primary">Upload</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Middle: Recent Worker Uploads -->
+    <div class="mb-4">
+        <h4>Recent Worker Uploads</h4>
+        <div class="row">
+            {% for upload in worker_uploads %}
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <img src="{{ upload.image.url }}" class="card-img-top" alt="Worker upload">
+                    <div class="card-body">
+                        <p class="card-text">{{ upload.description }}</p>
+                        <small class="text-muted">{{ upload.user.get_full_name }} - {{ upload.timestamp|date:'M d, Y H:i' }}</small>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-muted">No uploads from workers yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+    <!-- Bottom: Activity Log Form & Recent Worker Activities -->
+    <div class="row mt-4">
+        <div class="col-md-6 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Log Activity</h5>
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ act_form.as_p }}
+                        <button type="submit" name="log_activity" class="btn btn-success">Log Activity</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Recent Worker Activities</h5>
+                    <ul class="list-group">
+                        {% for activity in worker_activities %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>{{ activity.user.get_full_name }}</strong>: {{ activity.action }} - {{ activity.details }}<br>
+                                <small class="text-muted">{{ activity.timestamp|date:'M d, Y H:i' }}</small>
+                                {% if activity.confirmed %}
+                                    <span class="badge bg-success ms-2">Confirmed</span>
+                                {% endif %}
+                            </div>
+                            {% if not activity.confirmed %}
+                            <form method="post" style="margin:0;">
+                                {% csrf_token %}
+                                <input type="hidden" name="confirm_activity_id" value="{{ activity.id }}">
+                                <button type="submit" class="btn btn-outline-success btn-sm">Confirm</button>
+                            </form>
+                            {% endif %}
+                        </li>
+                        {% empty %}
+                        <li class="list-group-item text-muted">No activities from workers yet.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

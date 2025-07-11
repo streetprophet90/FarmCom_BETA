@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2>User Dashboard</h2>
+        <div>
+            <a href="{% url 'profile' %}" class="btn btn-outline-secondary me-2">View Profile</a>
+            <a href="{% url 'user_dashboard' %}" class="btn btn-primary">Dashboard</a>
+        </div>
+    </div>
+    <hr>
+    <!-- Top Row: Progress & Upload Form -->
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h4 class="card-title">Progress</h4>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">Uploads: {{ progress.uploads_count }}</li>
+                        <li class="list-group-item">Activities: {{ progress.activity_count }}</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h4 class="card-title">Upload Image</h4>
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {{ img_form.as_p }}
+                        <button type="submit" name="upload_image" class="btn btn-primary">Upload</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Middle: Recent Uploads -->
+    <div class="mb-4">
+        <h4>Recent Uploads</h4>
+        <div class="row">
+            {% for upload in uploads %}
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <img src="{{ upload.image.url }}" class="card-img-top" alt="User upload">
+                    <div class="card-body">
+                        <p class="card-text">{{ upload.description }}</p>
+                        <small class="text-muted">{{ upload.timestamp|date:'M d, Y H:i' }}</small>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-muted">No uploads yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+    <!-- Bottom: Activity Log Form & Recent Activities -->
+    <div class="row mt-4">
+        <div class="col-md-6 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Log Activity</h5>
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ act_form.as_p }}
+                        <button type="submit" name="log_activity" class="btn btn-success">Log Activity</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Recent Activities</h5>
+                    <ul class="list-group">
+                        {% for activity in activities %}
+                        <li class="list-group-item">
+                            <strong>{{ activity.action }}</strong> - {{ activity.details }}<br>
+                            <small class="text-muted">{{ activity.timestamp|date:'M d, Y H:i' }}</small>
+                        </li>
+                        {% empty %}
+                        <li class="list-group-item text-muted">No activities yet.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

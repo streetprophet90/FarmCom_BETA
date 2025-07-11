@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import User
+from .models import User, ImageUpload, ActivityLog
 
 
 class UserRegistrationForm(UserCreationForm):
@@ -33,3 +33,21 @@ class UserProfileForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         for field in self.fields.values():
             field.widget.attrs['class'] = 'form-control' 
+
+
+class ImageUploadForm(forms.ModelForm):
+    class Meta:
+        model = ImageUpload
+        fields = ['image', 'description']
+        widgets = {
+            'description': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Description (optional)'}),
+        }
+
+class ActivityLogForm(forms.ModelForm):
+    class Meta:
+        model = ActivityLog
+        fields = ['action', 'details']
+        widgets = {
+            'action': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Action (e.g. Planted maize)'}),
+            'details': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'Details (optional)'}),
+        } 
