@@ -5,7 +5,7 @@ from django.contrib.auth import login
 from .forms import UserRegistrationForm, UserProfileForm, ImageUploadForm, ActivityLogForm
 from .models import ActivityLog, ImageUpload, User
 from django.contrib.auth import get_user_model
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.utils import timezone
 from datetime import timedelta
 import json
@@ -174,6 +174,41 @@ def user_dashboard(request):
                 activity.save()
                 messages.success(request, 'Activity logged successfully!')
                 return redirect('user_dashboard')
+    # Calculate project progress
+    from farming.models import FarmingProject
+    user_projects = FarmingProject.objects.filter(
+        Q(manager=user) | Q(workers=user)
+    ).distinct()
+    
+    project_progress = []
+    for project in user_projects:
+        # Calculate progress based on status and activities
+        if project.status == 'COMPLETED':
+            progress_percentage = 100
+        elif project.status == 'HARVESTED':
+            progress_percentage = 90
+        elif project.status == 'ACTIVE':
+            # Calculate based on time elapsed vs total duration
+            if project.end_date:
+                total_days = (project.end_date - project.start_date).days
+                elapsed_days = (timezone.now().date() - project.start_date).days
+                if total_days > 0:
+                    progress_percentage = min(80, max(20, (elapsed_days / total_days) * 80))
+                else:
+                    progress_percentage = 50
+            else:
+                progress_percentage = 50
+        elif project.status == 'PLANNING':
+            progress_percentage = 10
+        else:
+            progress_percentage = 0
+            
+        project_progress.append({
+            'project': project,
+            'percentage': progress_percentage,
+            'status': project.get_status_display(),
+        })
+    
     return render(request, 'accounts/user_dashboard.html', {
         'progress': progress,
         'uploads': uploads,
@@ -181,6 +216,7 @@ def user_dashboard(request):
         'img_form': img_form,
         'act_form': act_form,
         'analytics_data': analytics_data,
+        'project_progress': project_progress,
     })
 
 @login_required
@@ -282,6 +318,41 @@ def farmer_dashboard(request):
             except ActivityLog.DoesNotExist:
                 messages.error(request, 'Activity not found or not allowed to confirm.')
             return redirect('farmer_dashboard')
+    # Calculate team project progress
+    from farming.models import FarmingProject
+    team_projects = FarmingProject.objects.filter(
+        Q(manager=user) | Q(workers__in=workers)
+    ).distinct()
+    
+    team_project_progress = []
+    for project in team_projects:
+        # Calculate progress based on status and activities
+        if project.status == 'COMPLETED':
+            progress_percentage = 100
+        elif project.status == 'HARVESTED':
+            progress_percentage = 90
+        elif project.status == 'ACTIVE':
+            # Calculate based on time elapsed vs total duration
+            if project.end_date:
+                total_days = (project.end_date - project.start_date).days
+                elapsed_days = (timezone.now().date() - project.start_date).days
+                if total_days > 0:
+                    progress_percentage = min(80, max(20, (elapsed_days / total_days) * 80))
+                else:
+                    progress_percentage = 50
+            else:
+                progress_percentage = 50
+        elif project.status == 'PLANNING':
+            progress_percentage = 10
+        else:
+            progress_percentage = 0
+            
+        team_project_progress.append({
+            'project': project,
+            'percentage': progress_percentage,
+            'status': project.get_status_display(),
+        })
+    
     return render(request, 'accounts/farmer_dashboard.html', {
         'stats': stats,
         'workers': workers,
@@ -290,4 +361,5 @@ def farmer_dashboard(request):
         'img_form': img_form,
         'act_form': act_form,
         'analytics_data': analytics_data,
+        'team_project_progress': team_project_progress,
     })

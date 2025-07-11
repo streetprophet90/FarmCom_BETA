@@ -32,6 +32,35 @@
                         <li class="list-group-item">Uploads: {{ progress.uploads_count }}</li>
                         <li class="list-group-item">Activities: {{ progress.activity_count }}</li>
                     </ul>
+                    
+                    <!-- Project Progress Bars -->
+                    {% if project_progress %}
+                    <h5 class="mt-3">Project Progress</h5>
+                    {% for progress_item in project_progress %}
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <small class="text-muted">{{ progress_item.project.crops }}</small>
+                            <small class="text-muted">{{ progress_item.percentage|floatformat:0 }}%</small>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar 
+                                {% if progress_item.percentage >= 90 %}bg-success
+                                {% elif progress_item.percentage >= 60 %}bg-info
+                                {% elif progress_item.percentage >= 30 %}bg-warning
+                                {% else %}bg-secondary{% endif %}" 
+                                role="progressbar" 
+                                style="width: {{ progress_item.percentage }}%"
+                                aria-valuenow="{{ progress_item.percentage }}" 
+                                aria-valuemin="0" 
+                                aria-valuemax="100">
+                            </div>
+                        </div>
+                        <small class="text-muted">{{ progress_item.status }}</small>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <p class="text-muted mt-3">No projects found.</p>
+                    {% endif %}
                 </div>
             </div>
         </div>
