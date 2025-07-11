@@ -5,6 +5,66 @@ from django.contrib.auth import login
 from .forms import UserRegistrationForm, UserProfileForm, ImageUploadForm, ActivityLogForm
 from .models import ActivityLog, ImageUpload, User
 from django.contrib.auth import get_user_model
+from django.db.models import Count
+from django.utils import timezone
+from datetime import timedelta
+import json
+
+def get_activity_analytics(user, days=30):
+    """Generate activity analytics data for charts"""
+    end_date = timezone.now()
+    start_date = end_date - timedelta(days=days)
+    
+    # Get daily activity counts
+    daily_activities = ActivityLog.objects.filter(
+        user=user,
+        timestamp__gte=start_date,
+        timestamp__lte=end_date
+    ).extra(
+        select={'day': 'date(timestamp)'}
+    ).values('day').annotate(count=Count('id')).order_by('day')
+    
+    # Get daily upload counts
+    daily_uploads = ImageUpload.objects.filter(
+        user=user,
+        timestamp__gte=start_date,
+        timestamp__lte=end_date
+    ).extra(
+        select={'day': 'date(timestamp)'}
+    ).values('day').annotate(count=Count('id')).order_by('day')
+    
+    # Prepare data for charts
+    dates = []
+    activity_counts = []
+    upload_counts = []
+    
+    current_date = start_date.date()
+    while current_date <= end_date.date():
+        dates.append(current_date.strftime('%b %d'))
+        
+        # Find activity count for this date
+        activity_count = next(
+            (item['count'] for item in daily_activities if item['day'] == current_date),
+            0
+        )
+        activity_counts.append(activity_count)
+        
+        # Find upload count for this date
+        upload_count = next(
+            (item['count'] for item in daily_uploads if item['day'] == current_date),
+            0
+        )
+        upload_counts.append(upload_count)
+        
+        current_date += timedelta(days=1)
+    
+    return {
+        'dates': dates,
+        'activity_counts': activity_counts,
+        'upload_counts': upload_counts,
+        'total_activities': sum(activity_counts),
+        'total_uploads': sum(upload_counts),
+    }
 
 @login_required
 def profile(request):
@@ -41,6 +101,60 @@ def user_dashboard(request):
         'uploads_count': uploads.count(),
         'activity_count': activities.count(),
     }
+    
+    # Generate activity analytics data
+    end_date = timezone.now()
+    start_date = end_date - timedelta(days=30)
+    
+    # Get daily activity counts for the last 30 days
+    daily_activities = ActivityLog.objects.filter(
+        user=user,
+        timestamp__gte=start_date,
+        timestamp__lte=end_date
+    ).extra(
+        select={'day': 'date(timestamp)'}
+    ).values('day').annotate(count=Count('id')).order_by('day')
+    
+    # Get daily upload counts for the last 30 days
+    daily_uploads = ImageUpload.objects.filter(
+        user=user,
+        timestamp__gte=start_date,
+        timestamp__lte=end_date
+    ).extra(
+        select={'day': 'date(timestamp)'}
+    ).values('day').annotate(count=Count('id')).order_by('day')
+    
+    # Prepare chart data
+    dates = []
+    activity_counts = []
+    upload_counts = []
+    
+    current_date = start_date.date()
+    while current_date <= end_date.date():
+        dates.append(current_date.strftime('%b %d'))
+        
+        # Find activity count for this date
+        activity_count = next(
+            (item['count'] for item in daily_activities if item['day'] == current_date),
+            0
+        )
+        activity_counts.append(activity_count)
+        
+        # Find upload count for this date
+        upload_count = next(
+            (item['count'] for item in daily_uploads if item['day'] == current_date),
+            0
+        )
+        upload_counts.append(upload_count)
+        
+        current_date += timedelta(days=1)
+    
+    analytics_data = {
+        'dates': json.dumps(dates),
+        'activity_counts': json.dumps(activity_counts),
+        'upload_counts': json.dumps(upload_counts),
+    }
+    
     img_form = ImageUploadForm()
     act_form = ActivityLogForm()
     if request.method == 'POST':
@@ -66,6 +180,7 @@ def user_dashboard(request):
         'activities': activities,
         'img_form': img_form,
         'act_form': act_form,
+        'analytics_data': analytics_data,
     })
 
 @login_required
@@ -83,6 +198,59 @@ def farmer_dashboard(request):
         'worker_count': workers.count(),
         'total_uploads': worker_uploads.count(),
         'total_activities': worker_activities.count(),
+    }
+    
+    # Generate team activity analytics data
+    end_date = timezone.now()
+    start_date = end_date - timedelta(days=30)
+    
+    # Get daily activity counts for the team (last 30 days)
+    daily_activities = ActivityLog.objects.filter(
+        user__in=workers,
+        timestamp__gte=start_date,
+        timestamp__lte=end_date
+    ).extra(
+        select={'day': 'date(timestamp)'}
+    ).values('day').annotate(count=Count('id')).order_by('day')
+    
+    # Get daily upload counts for the team (last 30 days)
+    daily_uploads = ImageUpload.objects.filter(
+        user__in=workers,
+        timestamp__gte=start_date,
+        timestamp__lte=end_date
+    ).extra(
+        select={'day': 'date(timestamp)'}
+    ).values('day').annotate(count=Count('id')).order_by('day')
+    
+    # Prepare chart data
+    dates = []
+    activity_counts = []
+    upload_counts = []
+    
+    current_date = start_date.date()
+    while current_date <= end_date.date():
+        dates.append(current_date.strftime('%b %d'))
+        
+        # Find activity count for this date
+        activity_count = next(
+            (item['count'] for item in daily_activities if item['day'] == current_date),
+            0
+        )
+        activity_counts.append(activity_count)
+        
+        # Find upload count for this date
+        upload_count = next(
+            (item['count'] for item in daily_uploads if item['day'] == current_date),
+            0
+        )
+        upload_counts.append(upload_count)
+        
+        current_date += timedelta(days=1)
+    
+    analytics_data = {
+        'dates': json.dumps(dates),
+        'activity_counts': json.dumps(activity_counts),
+        'upload_counts': json.dumps(upload_counts),
     }
     img_form = ImageUploadForm()
     act_form = ActivityLogForm()
@@ -121,4 +289,5 @@ def farmer_dashboard(request):
         'worker_activities': worker_activities,
         'img_form': img_form,
         'act_form': act_form,
+        'analytics_data': analytics_data,
     })

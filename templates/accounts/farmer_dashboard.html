@@ -9,6 +9,19 @@
         </div>
     </div>
     <hr>
+    
+    <!-- Activity Analytics Chart -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">Team Activity Analytics (Last 30 Days)</h4>
+                    <canvas id="teamActivityChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <!-- Top Row: Team Stats & Upload Form -->
     <div class="row mb-4">
         <div class="col-md-4 mb-3">
@@ -108,4 +121,53 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Team activity data from the backend
+const teamChartData = {
+    labels: JSON.parse('{{ analytics_data.dates|escapejs }}'),
+    datasets: [{
+        label: 'Team Activities',
+        data: JSON.parse('{{ analytics_data.activity_counts|escapejs }}'),
+        borderColor: 'rgb(75, 192, 192)',
+        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+        tension: 0.1
+    }, {
+        label: 'Team Uploads',
+        data: JSON.parse('{{ analytics_data.upload_counts|escapejs }}'),
+        borderColor: 'rgb(255, 99, 132)',
+        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+        tension: 0.1
+    }]
+};
+
+// Create the team activity chart
+const teamCtx = document.getElementById('teamActivityChart').getContext('2d');
+const teamActivityChart = new Chart(teamCtx, {
+    type: 'line',
+    data: teamChartData,
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'top',
+            },
+            title: {
+                display: true,
+                text: 'Team Daily Activity Trends (Last 30 Days)'
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                ticks: {
+                    stepSize: 1
+                }
+            }
+        }
+    }
+});
+</script>
 {% endblock %} 

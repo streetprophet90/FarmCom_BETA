@@ -162,4 +162,8 @@ Thumbs.db
 
 # Temporary files
 *.tmp
-*.temp 
+*.temp
+
+# Project specific files
+FARMCOM_RECOMMENDATIONS.md
+DASHBOARD_ENHANCEMENTS_PROGRESS.md 
