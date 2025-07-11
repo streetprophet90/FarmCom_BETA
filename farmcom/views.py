@@ -20,5 +20,13 @@ def home(request):
             'news': news,
         })
     else:
-        # Show the public home page
-        return render(request, 'home.html') 
+        # Show the public home page with counters
+        context = {
+            'total_lands': Land.objects.count(),
+            'total_projects': FarmingProject.objects.count(),
+            'total_listings': CropListing.objects.count(),
+            'total_users': User.objects.count(),
+            'recent_lands': Land.objects.order_by('-id')[:5],
+            'recent_projects': FarmingProject.objects.order_by('-id')[:5],
+        }
+        return render(request, 'home.html', context) 

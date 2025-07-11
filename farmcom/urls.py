@@ -20,10 +20,11 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
 from django.contrib.auth import logout
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 from . import views
 
 def custom_logout(request):
+    from django.contrib.auth import logout
     logout(request)
     return redirect('home')
 
@@ -33,6 +34,8 @@ urlpatterns = [
     path('lands/', include('lands.urls')),
     path('farming/', include('farming.urls')),
     path('marketplace/', include('marketplace.urls')),
+    path('login/', auth_views.LoginView.as_view(template_name='accounts/login.html'), name='login'),
+    path('logout/', custom_logout, name='logout'),  # Add logout URL at root level
     path('', views.home, name='home'),
 ]
 
