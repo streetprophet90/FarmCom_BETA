@@ -69,3 +69,14 @@ class ImageUpload(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.image.name} at {self.timestamp.strftime('%Y-%m-%d %H:%M')}"
+
+class Recommendation(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='recommendations')
+    content = models.TextField()
+    project = models.ForeignKey('farming.FarmingProject', on_delete=models.CASCADE, null=True, blank=True, related_name='recommendations')
+    land = models.ForeignKey('lands.Land', on_delete=models.CASCADE, null=True, blank=True, related_name='recommendations')
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        target = self.project or self.land
+        return f"{self.user.username} on {target}: {self.content[:30]}..."

@@ -2,8 +2,8 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth import login
-from .forms import UserRegistrationForm, UserProfileForm, ImageUploadForm, ActivityLogForm
-from .models import ActivityLog, ImageUpload, User
+from .forms import UserRegistrationForm, UserProfileForm, ImageUploadForm, ActivityLogForm, RecommendationForm
+from .models import ActivityLog, ImageUpload, User, Recommendation
 from django.contrib.auth import get_user_model
 from django.db.models import Count, Q
 from django.utils import timezone
@@ -66,6 +66,20 @@ def get_activity_analytics(user, days=30):
         'total_uploads': sum(upload_counts),
     }
 
+def get_dashboard_url(user):
+    if user.is_superuser:
+        return 'user_dashboard'
+    if user.user_type == 'FARMER':
+        return 'farmer_dashboard'
+    elif user.user_type == 'WORKER':
+        return 'worker_dashboard'
+    elif user.user_type == 'INVESTOR':
+        return 'investor_dashboard'
+    elif user.user_type == 'STUDENT':
+        return 'student_dashboard'
+    else:
+        return 'user_dashboard'
+
 @login_required
 def profile(request):
     if request.method == 'POST':
@@ -85,8 +99,9 @@ def register(request):
         if form.is_valid():
             user = form.save()
             login(request, user)
-            messages.success(request, f'Welcome to FarmCom, {user.first_name}!')
-            return redirect('home')
+            dashboard_type = user.get_user_type_display() if hasattr(user, 'get_user_type_display') else user.user_type
+            messages.success(request, f'Welcome to FarmCom, {user.first_name}! You are now in the {dashboard_type} Dashboard.')
+            return redirect(get_dashboard_url(user))
     else:
         form = UserRegistrationForm()
     
@@ -309,7 +324,6 @@ def farmer_dashboard(request):
                 return redirect('farmer_dashboard')
         elif 'confirm_activity_id' in request.POST:
             activity_id = request.POST.get('confirm_activity_id')
-            from .models import ActivityLog
             try:
                 activity = ActivityLog.objects.get(id=activity_id, user__in=workers)
                 activity.confirmed = True
@@ -317,6 +331,16 @@ def farmer_dashboard(request):
                 messages.success(request, 'Activity confirmed!')
             except ActivityLog.DoesNotExist:
                 messages.error(request, 'Activity not found or not allowed to confirm.')
+            return redirect('farmer_dashboard')
+        elif 'disapprove_activity_id' in request.POST:
+            activity_id = request.POST.get('disapprove_activity_id')
+            try:
+                activity = ActivityLog.objects.get(id=activity_id, user__in=workers)
+                activity.confirmed = False
+                activity.save()
+                messages.success(request, 'Activity disapproved!')
+            except ActivityLog.DoesNotExist:
+                messages.error(request, 'Activity not found or not allowed to disapprove.')
             return redirect('farmer_dashboard')
     # Calculate team project progress
     from farming.models import FarmingProject
@@ -362,4 +386,125 @@ def farmer_dashboard(request):
         'act_form': act_form,
         'analytics_data': analytics_data,
         'team_project_progress': team_project_progress,
+    })
+
+@login_required
+def worker_dashboard(request):
+    user = request.user
+    if user.user_type != 'WORKER':
+        return redirect('user_dashboard')
+    # Get projects where user is a worker
+    user_projects = FarmingProject.objects.filter(workers=user).distinct()
+    project_progress = []
+    for project in user_projects:
+        if project.status == 'COMPLETED':
+            progress_percentage = 100
+        elif project.status == 'HARVESTED':
+            progress_percentage = 90
+        elif project.status == 'ACTIVE':
+            if project.end_date:
+                total_days = (project.end_date - project.start_date).days
+                elapsed_days = (timezone.now().date() - project.start_date).days
+                if total_days > 0:
+                    progress_percentage = min(80, max(20, (elapsed_days / total_days) * 80))
+                else:
+                    progress_percentage = 50
+            else:
+                progress_percentage = 50
+        elif project.status == 'PLANNING':
+            progress_percentage = 10
+        else:
+            progress_percentage = 0
+        project_progress.append({
+            'project': project,
+            'percentage': progress_percentage,
+            'status': project.get_status_display(),
+        })
+    return render(request, 'accounts/worker_dashboard.html', {
+        'project_progress': project_progress,
+    })
+
+@login_required
+def investor_dashboard(request):
+    user = request.user
+    if user.user_type != 'INVESTOR':
+        return redirect('user_dashboard')
+    # Get projects the investor is observing (for now, show all projects)
+    user_projects = FarmingProject.objects.all()
+    project_progress = []
+    for project in user_projects:
+        if project.status == 'COMPLETED':
+            progress_percentage = 100
+        elif project.status == 'HARVESTED':
+            progress_percentage = 90
+        elif project.status == 'ACTIVE':
+            if project.end_date:
+                total_days = (project.end_date - project.start_date).days
+                elapsed_days = (timezone.now().date() - project.start_date).days
+                if total_days > 0:
+                    progress_percentage = min(80, max(20, (elapsed_days / total_days) * 80))
+                else:
+                    progress_percentage = 50
+            else:
+                progress_percentage = 50
+        elif project.status == 'PLANNING':
+            progress_percentage = 10
+        else:
+            progress_percentage = 0
+        project_progress.append({
+            'project': project,
+            'percentage': progress_percentage,
+            'status': project.get_status_display(),
+        })
+    return render(request, 'accounts/investor_dashboard.html', {
+        'project_progress': project_progress,
+    })
+
+@login_required
+def student_dashboard(request):
+    user = request.user
+    if user.user_type != 'STUDENT':
+        return redirect('user_dashboard')
+    # Get all projects for learning purposes
+    user_projects = FarmingProject.objects.all()
+    project_progress = []
+    for project in user_projects:
+        if project.status == 'COMPLETED':
+            progress_percentage = 100
+        elif project.status == 'HARVESTED':
+            progress_percentage = 90
+        elif project.status == 'ACTIVE':
+            if project.end_date:
+                total_days = (project.end_date - project.start_date).days
+                elapsed_days = (timezone.now().date() - project.start_date).days
+                if total_days > 0:
+                    progress_percentage = min(80, max(20, (elapsed_days / total_days) * 80))
+                else:
+                    progress_percentage = 50
+            else:
+                progress_percentage = 50
+        elif project.status == 'PLANNING':
+            progress_percentage = 10
+        else:
+            progress_percentage = 0
+        project_progress.append({
+            'project': project,
+            'percentage': progress_percentage,
+            'status': project.get_status_display(),
+        })
+    # Handle recommendation form
+    form = RecommendationForm()
+    if request.method == 'POST':
+        form = RecommendationForm(request.POST)
+        if form.is_valid():
+            rec = form.save(commit=False)
+            rec.user = user
+            rec.save()
+            messages.success(request, 'Recommendation submitted!')
+            return redirect('student_dashboard')
+    recommendations = Recommendation.objects.order_by('-timestamp')[:10]
+    return render(request, 'accounts/student_dashboard.html', {
+        'project_progress': project_progress,
+        'form': form,
+        'recommendations': recommendations,
     })

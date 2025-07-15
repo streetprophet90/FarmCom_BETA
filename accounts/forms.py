@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import User, ImageUpload, ActivityLog
+from .models import User, ImageUpload, ActivityLog, Recommendation
 
 
 class UserRegistrationForm(UserCreationForm):
@@ -50,4 +50,14 @@ class ActivityLogForm(forms.ModelForm):
         widgets = {
             'action': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Action (e.g. Planted maize)'}),
             'details': forms.Textarea(attrs={'class': 'form-control', 'rows': 2, 'placeholder': 'Details (optional)'}),
+        } 
+
+class RecommendationForm(forms.ModelForm):
+    class Meta:
+        model = Recommendation
+        fields = ['content', 'project', 'land']
+        widgets = {
+            'content': forms.Textarea(attrs={'rows': 3, 'class': 'form-control', 'placeholder': 'Share your recommendation or comment...'}),
+            'project': forms.Select(attrs={'class': 'form-select'}),
+            'land': forms.Select(attrs={'class': 'form-select'}),
         } 

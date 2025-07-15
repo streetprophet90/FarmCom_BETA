@@ -29,4 +29,10 @@ def home(request):
             'recent_lands': Land.objects.order_by('-id')[:5],
             'recent_projects': FarmingProject.objects.order_by('-id')[:5],
         }
-        return render(request, 'home.html', context) 
+        return render(request, 'home.html', context)
+
+def contact_support(request):
+    if request.method == 'POST':
+        # In a real app, handle sending email or saving the message
+        return render(request, 'contact_support.html', {'success': True})
+    return render(request, 'contact_support.html') 

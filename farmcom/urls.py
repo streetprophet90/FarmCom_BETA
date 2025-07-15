@@ -36,6 +36,7 @@ urlpatterns = [
     path('marketplace/', include('marketplace.urls')),
     path('login/', auth_views.LoginView.as_view(template_name='accounts/login.html'), name='login'),
     path('logout/', custom_logout, name='logout'),  # Add logout URL at root level
+    path('contact/', views.contact_support, name='contact_support'),
     path('', views.home, name='home'),
 ]
 

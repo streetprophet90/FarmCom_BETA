@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <div class="alert alert-success mb-3">
+        Welcome, {{ user.first_name }}! You are in the <strong>{{ user.get_user_type_display }}</strong> Dashboard.
+    </div>
+    <h2>Farm Worker Dashboard</h2>
+    <hr>
+    <div class="card mb-4">
+        <div class="card-header bg-info text-white">
+            <i class="fas fa-chart-line me-2"></i>Project Progress
+        </div>
+        <div class="card-body">
+            {% if project_progress %}
+                {% for progress_item in project_progress %}
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <small class="text-muted">{{ progress_item.project.crops }}</small>
+                        <small class="text-muted">{{ progress_item.percentage|floatformat:0 }}%</small>
+                    </div>
+                    <div class="progress" style="height: 8px;">
+                        <div class="progress-bar 
+                            {% if progress_item.percentage >= 90 %}bg-success
+                            {% elif progress_item.percentage >= 60 %}bg-info
+                            {% elif progress_item.percentage >= 30 %}bg-warning
+                            {% else %}bg-secondary{% endif %}" 
+                            role="progressbar" 
+                            style="width: {{ progress_item.percentage }}%"
+                            aria-valuenow="{{ progress_item.percentage }}" 
+                            aria-valuemin="0" 
+                            aria-valuemax="100">
+                        </div>
+                    </div>
+                    <small class="text-muted">{{ progress_item.status }}</small>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted">No projects found.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,6 +1,9 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="container mt-4">
+    <div class="alert alert-success mb-3">
+        Welcome, {{ user.first_name }}! You are in the <strong>{{ user.get_user_type_display }}</strong> Dashboard.
+    </div>
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h2>User Dashboard</h2>
         <div>
@@ -9,6 +12,36 @@
         </div>
     </div>
     <hr>
+    <!-- Quick Actions Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h4 class="card-title mb-3"><i class="fas fa-bolt me-2 text-warning"></i>Quick Actions</h4>
+                    <div class="d-flex flex-wrap gap-3">
+                        {% if user.user_type == 'LANDOWNER' or user.is_superuser %}
+                            <a href="{% url 'add_land' %}" class="btn btn-success btn-lg">
+                                <i class="fas fa-plus me-2"></i>Add Land
+                            </a>
+                        {% endif %}
+                        {% if user.user_type == 'FARMER' or user.is_superuser %}
+                            <a href="{% url 'start_project' %}" class="btn btn-primary btn-lg">
+                                <i class="fas fa-tractor me-2"></i>Start Project
+                            </a>
+                        {% endif %}
+                        {% if user.user_type != 'INVESTOR' and user.user_type != 'STUDENT' %}
+                            <a href="{% url 'listing_list' %}" class="btn btn-info btn-lg">
+                                <i class="fas fa-store me-2"></i>View Marketplace
+                            </a>
+                        {% endif %}
+                        <a href="{% url 'contact_support' %}" class="btn btn-outline-secondary btn-lg">
+                            <i class="fas fa-headset me-2"></i>Contact Support
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
     
     <!-- Activity Analytics Chart -->
     <div class="row mb-4">
