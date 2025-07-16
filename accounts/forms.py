@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import User, ImageUpload, ActivityLog, Recommendation
+from .models import User, ImageUpload, ActivityLog, Recommendation, Testimonial, BlogPost
 
 
 class UserRegistrationForm(UserCreationForm):
@@ -24,7 +24,7 @@ class UserRegistrationForm(UserCreationForm):
 class UserProfileForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ('first_name', 'last_name', 'email', 'phone', 'location', 'bio', 'skills')
+        fields = ('first_name', 'last_name', 'email', 'phone', 'location', 'bio', 'skills', 'avatar')
         widgets = {
             'bio': forms.Textarea(attrs={'rows': 4}),
         }
@@ -62,6 +62,14 @@ class RecommendationForm(forms.ModelForm):
             'land': forms.Select(attrs={'class': 'form-select'}),
         } 
 
+class TestimonialForm(forms.ModelForm):
+    class Meta:
+        model = Testimonial
+        fields = ['content', 'image']
+        widgets = {
+            'content': forms.Textarea(attrs={'rows': 3, 'class': 'form-control', 'placeholder': 'Share your experience...'}),
+        }
+
 class ContactSupportForm(forms.Form):
     SUBJECT_CHOICES = [
         ('INVESTMENT_INQUIRY', 'Investment Inquiry'),
@@ -93,3 +101,13 @@ class ContactSupportForm(forms.Form):
         widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         help_text='Check if this is an urgent matter'
     ) 
+
+class BlogPostForm(forms.ModelForm):
+    class Meta:
+        model = BlogPost
+        fields = ['title', 'content', 'image', 'external_url']
+        widgets = {
+            'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Blog Title'}),
+            'content': forms.Textarea(attrs={'class': 'form-control', 'rows': 5, 'placeholder': 'Write your blog post summary or intro...'}),
+            'external_url': forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'External URL (optional)'}),
+        } 

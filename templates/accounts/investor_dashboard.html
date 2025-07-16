@@ -18,7 +18,7 @@
                             <p class="lead mb-0">Monitor agricultural projects and investment opportunities</p>
                         </div>
                         <div class="col-md-4 text-end">
-                            <a href="{% url 'logged_in_home' %}" class="btn btn-light">
+                            <a href="{% url 'investor_home' %}" class="btn btn-light">
                                 <i class="fas fa-home me-2"></i>Back to Home
                             </a>
                         </div>
@@ -104,8 +104,8 @@
                                     <div class="mb-3">
                                         <strong>Progress:</strong>
                                         <div class="progress">
-                                            <div class="progress-bar bg-success" role="progressbar" style="width: {{ project_data.percentage }}%" aria-valuenow="{{ project_data.percentage }}" aria-valuemin="0" aria-valuemax="100">
-                                                {{ project_data.percentage }}%
+                                            <div class="progress-bar bg-success" role="progressbar" style="width: {{ project_data.percentage|floatformat:0 }}%" aria-valuenow="{{ project_data.percentage|floatformat:0 }}" aria-valuemin="0" aria-valuemax="100">
+                                                {{ project_data.percentage|floatformat:0 }}%
                                             </div>
                                         </div>
                                     </div>

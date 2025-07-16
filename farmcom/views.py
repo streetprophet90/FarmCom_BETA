@@ -5,7 +5,7 @@ from django.http import JsonResponse
 from lands.models import Land
 from farming.models import FarmingProject
 from marketplace.models import CropListing
-from accounts.models import User
+from accounts.models import User, Testimonial, BlogPost
 from .models import CommunityNews
 from .forms import CommunityNewsForm
 
@@ -22,6 +22,8 @@ def home(request):
             'total_users': User.objects.count(),
             'recent_lands': Land.objects.order_by('-id')[:5],
             'recent_projects': FarmingProject.objects.order_by('-id')[:5],
+            'testimonials': Testimonial.objects.filter(is_approved=True).order_by('-created_at')[:8],
+            'blog_posts': BlogPost.objects.filter(is_approved=True, is_published=True).order_by('-created_at')[:4],
         }
         return render(request, 'home.html', context)
 

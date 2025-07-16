@@ -2,6 +2,7 @@ from django.shortcuts import render,get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.views.generic import ListView, CreateView, UpdateView
 from django.db.models import Q
+from django.contrib.auth.mixins import UserPassesTestMixin
 
 from .models import Land
 from .forms import LandForm
@@ -73,11 +74,17 @@ def land_detail(request, pk):
     return render(request, 'lands/land_detail.html', {'land': land})
 
 
-class AddLandView(CreateView):
+class AddLandView(UserPassesTestMixin, CreateView):
     model = Land
     form_class = LandForm
     template_name = 'lands/add_land.html'
+    success_url = '/lands/'
 
-    def form_valid(self, form):
-        form.instance.owner = self.request.user
-        return super().form_valid(form)
+    def test_func(self):
+        return self.request.user.is_superuser or getattr(self.request.user, 'user_type', None) == 'LANDOWNER'
+
+    def handle_no_permission(self):
+        from django.contrib import messages
+        messages.error(self.request, 'You do not have permission to add land.')
+        from django.shortcuts import redirect
+        return redirect('land_list')

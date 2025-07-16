@@ -31,12 +31,12 @@
                     <strong><i class="fas fa-chart-pie me-1"></i>Distribution:</strong>
                     <div class="row mt-2">
                         <div class="col-6">
-                            <small>Landowner: {{ revenue_share.landowner_share }}%</small><br>
-                            <small>Workers: {{ revenue_share.workers_share }}%</small>
+                            <small>Landowner: {{ revenue_share.landowner_share|floatformat:0 }}%</small><br>
+                            <small>Workers: {{ revenue_share.workers_share|floatformat:0 }}%</small>
                         </div>
                         <div class="col-6">
-                            <small>Manager: {{ revenue_share.manager_share }}%</small><br>
-                            <small>Investor: {{ revenue_share.investor_share }}%</small>
+                            <small>Manager: {{ revenue_share.manager_share|floatformat:0 }}%</small><br>
+                            <small>Investor: {{ revenue_share.investor_share|floatformat:0 }}%</small>
                         </div>
                     </div>
                 </div>

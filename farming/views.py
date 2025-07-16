@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from .models import FarmingProject
 from .forms import FarmingProjectForm
 
@@ -21,6 +21,11 @@ def project_detail(request, pk):
 
 @login_required
 def start_project(request):
+    if not (request.user.is_superuser or getattr(request.user, 'user_type', None) == 'FARMER'):
+        from django.contrib import messages
+        messages.error(request, 'You do not have permission to start a project.')
+        from django.shortcuts import redirect
+        return redirect('project_list')
     if request.method == 'POST':
         form = FarmingProjectForm(request.POST)
         if form.is_valid():

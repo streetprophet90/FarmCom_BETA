@@ -2,8 +2,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.contrib.auth import login
-from .forms import UserRegistrationForm, UserProfileForm, ImageUploadForm, ActivityLogForm, RecommendationForm, ContactSupportForm
-from .models import ActivityLog, ImageUpload, User, Recommendation
+from .forms import UserRegistrationForm, UserProfileForm, ImageUploadForm, ActivityLogForm, RecommendationForm, ContactSupportForm, TestimonialForm, BlogPostForm
+from .models import ActivityLog, ImageUpload, User, Recommendation, Testimonial, BlogPost
 from django.contrib.auth import get_user_model
 from django.db.models import Count, Q, Avg, Sum
 from django.db.models.functions import TruncDate, TruncMonth
@@ -81,14 +81,16 @@ def get_activity_analytics(user, days=30):
 def get_dashboard_url(user):
     if user.is_superuser:
         return 'admin_dashboard'
-    if user.user_type == 'FARMER':
-        return 'farmer_dashboard'
+    if user.user_type == 'LANDOWNER':
+        return 'landowner_home'
+    elif user.user_type == 'FARMER':
+        return 'farmer_home'
     elif user.user_type == 'WORKER':
-        return 'worker_dashboard'
+        return 'worker_home'
     elif user.user_type == 'INVESTOR':
         return 'investor_home'
     elif user.user_type == 'STUDENT':
-        return 'student_dashboard'
+        return 'student_home'
     else:
         return 'user_dashboard'
 
@@ -1313,7 +1315,7 @@ def generate_report(request):
         return redirect('admin_analytics')
 
 def custom_login(request):
-    """Custom login view that redirects to home page after successful login"""
+    """Custom login view that redirects to the correct dashboard/home after successful login"""
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
@@ -1321,8 +1323,8 @@ def custom_login(request):
         
         if user is not None:
             auth_login(request, user)
-            # Redirect to home page where users can see welcome message and choose their dashboard
-            return redirect('home')
+            # Redirect to the correct dashboard/home for the user's role
+            return redirect(get_dashboard_url(user))
         else:
             messages.error(request, 'Invalid username or password.')
     
@@ -1357,4 +1359,182 @@ def contact_support(request):
     return render(request, 'accounts/contact_support.html', {
         'form': form,
         **get_notification_data(request.user),
+    })
+
+@login_required
+def submit_testimonial(request):
+    if request.method == 'POST':
+        form = TestimonialForm(request.POST, request.FILES)
+        if form.is_valid():
+            testimonial = form.save(commit=False)
+            testimonial.user = request.user
+            testimonial.save()
+            messages.success(request, 'Your testimonial has been submitted and is pending approval.')
+            return redirect('testimonial_thankyou')
+    else:
+        form = TestimonialForm()
+    return render(request, 'accounts/submit_testimonial.html', {'form': form})
+
+@login_required
+def testimonial_thankyou(request):
+    return render(request, 'accounts/testimonial_thankyou.html')
+
+# For homepage display
+from django.db.models import Q
+
+def approved_testimonials():
+    return Testimonial.objects.filter(is_approved=True).order_by('-created_at')
+
+@login_required
+def submit_blog_post(request):
+    if request.method == 'POST':
+        form = BlogPostForm(request.POST, request.FILES)
+        if form.is_valid():
+            blog_post = form.save(commit=False)
+            blog_post.author = request.user
+            # Only auto-approve if admin/superuser
+            if request.user.is_superuser or request.user.is_staff:
+                blog_post.is_approved = True
+            blog_post.save()
+            messages.success(request, 'Your blog post has been submitted and is pending approval.')
+            return redirect('blog_post_thankyou')
+    else:
+        form = BlogPostForm()
+    return render(request, 'accounts/submit_blog_post.html', {'form': form})
+
+@login_required
+def blog_post_thankyou(request):
+    return render(request, 'accounts/blog_post_thankyou.html')
+
+def homepage_blog_posts():
+    return BlogPost.objects.filter(is_approved=True, is_published=True).order_by('-created_at')[:4]
+
+def blog_post_detail(request, pk):
+    post = get_object_or_404(BlogPost, pk=pk, is_approved=True, is_published=True)
+    if post.external_url:
+        return redirect(post.external_url)
+    return render(request, 'accounts/blog_post_detail.html', {'post': post})
+
+@login_required
+def landowner_home(request):
+    user = request.user
+    if user.user_type != 'LANDOWNER':
+        return redirect(get_dashboard_url(user))
+
+    # Lands owned by the user
+    from lands.models import Land
+    lands = Land.objects.filter(owner=user)
+    total_lands = lands.count()
+    available_lands = lands.filter(is_available=True).count()
+    unavailable_lands = total_lands - available_lands
+
+    # Projects on user's lands
+    from farming.models import FarmingProject
+    projects = FarmingProject.objects.filter(land__owner=user)
+    total_projects = projects.count()
+    active_projects = projects.filter(status='ACTIVE').count()
+    completed_projects = projects.filter(status='COMPLETED').count()
+
+    # Community news (reuse context from investor_home if available)
+    from accounts.views import homepage_blog_posts, approved_testimonials
+    news = homepage_blog_posts()
+    testimonials = approved_testimonials()
+
+    return render(request, 'accounts/landowner_home.html', {
+        'total_lands': total_lands,
+        'available_lands': available_lands,
+        'unavailable_lands': unavailable_lands,
+        'total_projects': total_projects,
+        'active_projects': active_projects,
+        'completed_projects': completed_projects,
+        'news': news,
+        'testimonials': testimonials,
+        **get_notification_data(user),
+    })
+
+@login_required
+def farmer_home(request):
+    user = request.user
+    if user.user_type != 'FARMER':
+        return redirect(get_dashboard_url(user))
+
+    from farming.models import FarmingProject
+    projects = FarmingProject.objects.filter(manager=user)
+    total_projects = projects.count()
+    active_projects = projects.filter(status='ACTIVE').count()
+    completed_projects = projects.filter(status='COMPLETED').count()
+
+    # Team (workers supervised by this farmer)
+    from accounts.models import User
+    team = User.objects.filter(supervisor=user, user_type='WORKER')
+    team_count = team.count()
+
+    from accounts.views import homepage_blog_posts, approved_testimonials
+    news = homepage_blog_posts()
+    testimonials = approved_testimonials()
+
+    return render(request, 'accounts/farmer_home.html', {
+        'total_projects': total_projects,
+        'active_projects': active_projects,
+        'completed_projects': completed_projects,
+        'team_count': team_count,
+        'news': news,
+        'testimonials': testimonials,
+        **get_notification_data(user),
+    })
+
+@login_required
+def worker_home(request):
+    user = request.user
+    if user.user_type != 'WORKER':
+        return redirect(get_dashboard_url(user))
+
+    from farming.models import FarmingProject
+    projects = FarmingProject.objects.filter(workers=user)
+    total_projects = projects.count()
+    active_projects = projects.filter(status='ACTIVE').count()
+    completed_projects = projects.filter(status='COMPLETED').count()
+
+    from accounts.models import ImageUpload, ActivityLog
+    uploads_count = ImageUpload.objects.filter(user=user).count()
+    activities_count = ActivityLog.objects.filter(user=user).count()
+
+    from accounts.views import homepage_blog_posts, approved_testimonials
+    news = homepage_blog_posts()
+    testimonials = approved_testimonials()
+
+    return render(request, 'accounts/worker_home.html', {
+        'total_projects': total_projects,
+        'active_projects': active_projects,
+        'completed_projects': completed_projects,
+        'uploads_count': uploads_count,
+        'activities_count': activities_count,
+        'news': news,
+        'testimonials': testimonials,
+        **get_notification_data(user),
+    })
+
+@login_required
+def student_home(request):
+    user = request.user
+    if user.user_type != 'STUDENT':
+        return redirect(get_dashboard_url(user))
+
+    from farming.models import FarmingProject
+    projects = FarmingProject.objects.filter(workers=user)
+    total_projects = projects.count()
+    active_projects = projects.filter(status='ACTIVE').count()
+    completed_projects = projects.filter(status='COMPLETED').count()
+
+    from accounts.views import homepage_blog_posts, approved_testimonials
+    news = homepage_blog_posts()
+    testimonials = approved_testimonials()
+
+    return render(request, 'accounts/student_home.html', {
+        'total_projects': total_projects,
+        'active_projects': active_projects,
+        'completed_projects': completed_projects,
+        'news': news,
+        'testimonials': testimonials,
+        **get_notification_data(user),
     })

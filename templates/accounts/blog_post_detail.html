@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ post.title }} - Blog - FarmCom{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card mb-4">
+                {% if post.image %}
+                    <img src="{{ post.image.url }}" class="card-img-top" alt="Blog Image">
+                {% endif %}
+                <div class="card-body">
+                    <h2 class="card-title">{{ post.title }}</h2>
+                    <div class="d-flex align-items-center mb-3">
+                        {% if post.author.avatar %}
+                            <img src="{{ post.author.avatar.url }}" class="rounded-circle me-2" width="40" height="40" alt="Author Avatar">
+                        {% else %}
+                            <img src="/static/images/default_avatar.png" class="rounded-circle me-2" width="40" height="40" alt="Author Avatar">
+                        {% endif %}
+                        <div>
+                            <strong>{{ post.author.get_full_name|default:post.author.username }}</strong>
+                            <div class="text-muted small">{{ post.created_at|date:"F j, Y" }}</div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        {{ post.content|linebreaks }}
+                    </div>
+                    {% if post.external_url %}
+                        <a href="{{ post.external_url }}" class="btn btn-outline-primary" target="_blank">Read on Company Blog <i class="fas fa-external-link-alt ms-1"></i></a>
+                    {% endif %}
+                </div>
+            </div>
+            {% if user.is_authenticated %}
+                {% if user.is_superuser %}
+                    <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">Back to Home</a>
+                {% elif user.user_type == 'LANDOWNER' %}
+                    <a href="{% url 'user_dashboard' %}" class="btn btn-secondary">Back to Home</a>
+                {% elif user.user_type == 'FARMER' %}
+                    <a href="{% url 'farmer_dashboard' %}" class="btn btn-secondary">Back to Home</a>
+                {% elif user.user_type == 'WORKER' %}
+                    <a href="{% url 'worker_dashboard' %}" class="btn btn-secondary">Back to Home</a>
+                {% elif user.user_type == 'INVESTOR' %}
+                    <a href="{% url 'investor_home' %}" class="btn btn-secondary">Back to Home</a>
+                {% elif user.user_type == 'STUDENT' %}
+                    <a href="{% url 'student_dashboard' %}" class="btn btn-secondary">Back to Home</a>
+                {% else %}
+                    <a href="/" class="btn btn-secondary">Back to Home</a>
+                {% endif %}
+            {% else %}
+                <a href="/" class="btn btn-secondary">Back to Home</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

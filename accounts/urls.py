@@ -11,6 +11,7 @@ urlpatterns = [
     path('investor-home/', views.investor_home, name='investor_home'),
     path('investor-dashboard/', views.investor_dashboard, name='investor_dashboard'),
     path('student-dashboard/', views.student_dashboard, name='student_dashboard'),
+    path('student-home/', views.student_home, name='student_home'),
     path('admin-dashboard/', views.admin_dashboard, name='admin_dashboard'),
     path('contact-support/', views.contact_support, name='contact_support'),
     path('custom-login/', views.custom_login, name='custom_login'),
@@ -35,5 +36,13 @@ urlpatterns = [
     path('audit-logs/', views.audit_logs, name='audit_logs'),
     path('admin-analytics/', views.admin_analytics, name='admin_analytics'),
     path('generate-report/', views.generate_report, name='generate_report'),
+    path('testimonial/submit/', views.submit_testimonial, name='submit_testimonial'),
+    path('testimonial/thankyou/', views.testimonial_thankyou, name='testimonial_thankyou'),
+    path('blog/submit/', views.submit_blog_post, name='submit_blog_post'),
+    path('blog/thankyou/', views.blog_post_thankyou, name='blog_post_thankyou'),
+    path('blog/<int:pk>/', views.blog_post_detail, name='blog_post_detail'),
+    path('landowner-home/', views.landowner_home, name='landowner_home'),
+    path('farmer-home/', views.farmer_home, name='farmer_home'),
+    path('worker-home/', views.worker_home, name='worker_home'),
     # Add more URL patterns as needed
 ] 
