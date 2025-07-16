@@ -5,12 +5,18 @@ from .forms import FarmingProjectForm
 
 @login_required
 def project_list(request):
-    projects = FarmingProject.objects.all()
+    user = request.user
+    if user.is_superuser:
+        projects = FarmingProject.objects.all()
+    else:
+        projects = FarmingProject.objects.filter(approval_status='APPROVED')
     return render(request, 'farming/project_list.html', {'projects': projects})
 
 @login_required
 def project_detail(request, pk):
     project = get_object_or_404(FarmingProject, pk=pk)
+    if not request.user.is_superuser and project.approval_status != 'APPROVED':
+        return render(request, 'farming/project_detail.html', {'error': 'This project is not available.'})
     return render(request, 'farming/project_detail.html', {'project': project})
 
 @login_required

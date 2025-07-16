@@ -1,0 +1,93 @@
+{% if unread_notifications > 0 or recent_notifications %}
+<div class="dropdown">
+    <button class="btn btn-outline-primary dropdown-toggle" type="button" id="notificationDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="fas fa-bell me-1"></i>
+        Notifications
+        {% if unread_notifications > 0 %}
+            <span class="badge bg-danger ms-1">{{ unread_notifications }}</span>
+        {% endif %}
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationDropdown" style="width: 350px;">
+        <li><h6 class="dropdown-header">Recent Notifications</h6></li>
+        {% if recent_notifications %}
+            {% for notification in recent_notifications %}
+                <li>
+                    <a class="dropdown-item" href="#" onclick="markNotificationRead({{ notification.id }})">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">{{ notification.title }}</h6>
+                            <small class="text-muted">{{ notification.created_at|timesince }} ago</small>
+                        </div>
+                        <p class="mb-1 small">{{ notification.message|truncatewords:10 }}</p>
+                    </a>
+                </li>
+            {% endfor %}
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-center" href="#" onclick="markAllNotificationsRead()">Mark All as Read</a></li>
+        {% else %}
+            <li><span class="dropdown-item-text text-muted">No new notifications</span></li>
+        {% endif %}
+    </ul>
+</div>
+
+<script>
+function markNotificationRead(notificationId) {
+    fetch(`/accounts/mark-notification-read/${notificationId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            // Remove the notification from the dropdown
+            const notificationItem = document.querySelector(`[onclick="markNotificationRead(${notificationId})"]`).parentElement;
+            notificationItem.remove();
+            
+            // Update the badge count
+            const badge = document.querySelector('#notificationDropdown .badge');
+            if (badge) {
+                const currentCount = parseInt(badge.textContent);
+                if (currentCount > 1) {
+                    badge.textContent = currentCount - 1;
+                } else {
+                    badge.remove();
+                }
+            }
+            
+            // If no more notifications, hide the dropdown
+            const notificationItems = document.querySelectorAll('#notificationDropdown + .dropdown-menu li');
+            if (notificationItems.length <= 2) { // Only header and "no notifications" message
+                document.querySelector('#notificationDropdown + .dropdown-menu').innerHTML = 
+                    '<li><h6 class="dropdown-header">Recent Notifications</h6></li><li><span class="dropdown-item-text text-muted">No new notifications</span></li>';
+            }
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+function markAllNotificationsRead() {
+    fetch('/accounts/mark-all-notifications-read/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            // Clear the dropdown
+            document.querySelector('#notificationDropdown + .dropdown-menu').innerHTML = 
+                '<li><h6 class="dropdown-header">Recent Notifications</h6></li><li><span class="dropdown-item-text text-muted">No new notifications</span></li>';
+            
+            // Remove the badge
+            const badge = document.querySelector('#notificationDropdown .badge');
+            if (badge) {
+                badge.remove();
+            }
+        }
+    })
+    .catch(error => console.error('Error:', error));
+}
+</script>
+{% endif %} 

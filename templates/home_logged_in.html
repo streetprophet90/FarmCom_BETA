@@ -7,8 +7,16 @@
             <p class="lead">We're glad to see you in the FarmCom community.</p>
             <div class="d-flex justify-content-center gap-3 mt-3">
                 <a href="{% url 'profile' %}" class="btn btn-outline-secondary">View Profile</a>
-                {% if user.user_type == 'FARMER' %}
+                {% if user.is_superuser %}
+                    <a href="{% url 'admin_dashboard' %}" class="btn btn-primary">Go to Admin Dashboard</a>
+                {% elif user.user_type == 'FARMER' %}
                     <a href="{% url 'farmer_dashboard' %}" class="btn btn-primary">Go to Dashboard</a>
+                {% elif user.user_type == 'WORKER' %}
+                    <a href="{% url 'worker_dashboard' %}" class="btn btn-primary">Go to Dashboard</a>
+                {% elif user.user_type == 'INVESTOR' %}
+                    <a href="{% url 'investor_dashboard' %}" class="btn btn-primary">Go to Dashboard</a>
+                {% elif user.user_type == 'STUDENT' %}
+                    <a href="{% url 'student_dashboard' %}" class="btn btn-primary">Go to Dashboard</a>
                 {% else %}
                     <a href="{% url 'user_dashboard' %}" class="btn btn-primary">Go to Dashboard</a>
                 {% endif %}

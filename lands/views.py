@@ -14,6 +14,9 @@ class LandListView(ListView):
 
     def get_queryset(self):
         queryset = Land.objects.filter(is_available=True)
+        user = self.request.user
+        if not user.is_authenticated or not user.is_superuser:
+            queryset = queryset.filter(approval_status='APPROVED')
         
         # Get filter parameters from request
         soil_type = self.request.GET.get('soil_type')
@@ -43,10 +46,14 @@ class LandListView(ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         
+        user = self.request.user
+        base_qs = Land.objects.filter(is_available=True)
+        if not user.is_authenticated or not user.is_superuser:
+            base_qs = base_qs.filter(approval_status='APPROVED')
         # Get unique values for filter dropdowns
-        context['soil_types'] = Land.objects.filter(is_available=True).values_list('soil_type', flat=True).distinct()
-        context['crop_types'] = Land.objects.filter(is_available=True).values_list('preferred_crops', flat=True).distinct()
-        context['locations'] = Land.objects.filter(is_available=True).values_list('location', flat=True).distinct()
+        context['soil_types'] = base_qs.values_list('soil_type', flat=True).distinct()
+        context['crop_types'] = base_qs.values_list('preferred_crops', flat=True).distinct()
+        context['locations'] = base_qs.values_list('location', flat=True).distinct()
         
         # Get current filter values
         context['current_soil'] = self.request.GET.get('soil_type', '')
@@ -61,6 +68,8 @@ class LandListView(ListView):
 @login_required
 def land_detail(request, pk):
     land = get_object_or_404(Land, pk=pk)
+    if not request.user.is_superuser and land.approval_status != 'APPROVED':
+        return render(request, 'lands/land_detail.html', {'error': 'This land is not available.'})
     return render(request, 'lands/land_detail.html', {'land': land})
 
 

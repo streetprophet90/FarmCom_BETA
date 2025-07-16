@@ -1,0 +1,578 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <div class="alert alert-primary shadow-sm mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <i class="fas fa-user-shield me-2"></i>Welcome, {{ user.first_name }}! This is the <strong>Admin Dashboard</strong>.
+            </div>
+            <div class="dropdown">
+                <button class="btn btn-outline-primary dropdown-toggle" type="button" id="notificationDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fas fa-bell me-1"></i>
+                    Notifications
+                    {% if unread_notifications > 0 %}
+                        <span class="badge bg-danger ms-1">{{ unread_notifications }}</span>
+                    {% endif %}
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationDropdown" style="width: 350px;">
+                    <li><h6 class="dropdown-header">Recent Notifications</h6></li>
+                    {% if recent_notifications %}
+                        {% for notification in recent_notifications %}
+                        <li>
+                            <a class="dropdown-item" href="#" onclick="markNotificationRead({{ notification.id }})">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">{{ notification.title }}</h6>
+                                    <small class="text-muted">{{ notification.created_at|timesince }} ago</small>
+                                </div>
+                                <p class="mb-1 small">{{ notification.message|truncatewords:10 }}</p>
+                            </a>
+                        </li>
+                        {% endfor %}
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-center" href="#" onclick="markAllNotificationsRead()">Mark All as Read</a></li>
+                    {% else %}
+                        <li><span class="dropdown-item-text text-muted">No new notifications</span></li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    <h2 class="mb-4">
+        <i class="fas fa-tachometer-alt me-2"></i>Platform Overview
+        <a href="{% url 'logged_in_home' %}" class="btn btn-outline-warning float-end">
+            <i class="fas fa-home me-1"></i>Back to Home
+        </a>
+    </h2>
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <i class="fas fa-users fa-2x text-primary mb-2"></i>
+                    <h5 class="card-title">Total Users</h5>
+                    <h3>{{ total_users }}</h3>
+                    <ul class="list-unstyled small">
+                        {% for uc in user_counts %}
+                        <li>{{ uc.user_type|title }}: {{ uc.count }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <i class="fas fa-map-marked-alt fa-2x text-success mb-2"></i>
+                    <h5 class="card-title">Lands</h5>
+                    <h3>{{ total_lands }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <i class="fas fa-tractor fa-2x text-warning mb-2"></i>
+                    <h5 class="card-title">Projects</h5>
+                    <h3>{{ total_projects }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <i class="fas fa-store fa-2x text-info mb-2"></i>
+                    <h5 class="card-title">Listings</h5>
+                    <h3>{{ total_listings }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <i class="fas fa-comments fa-lg text-secondary mb-2"></i>
+                    <h5 class="card-title">Recommendations</h5>
+                    <h3>{{ total_recommendations }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <i class="fas fa-tasks fa-lg text-dark mb-2"></i>
+                    <h5 class="card-title">Activities</h5>
+                    <h3>{{ total_activities }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+    <h3 class="mt-5 mb-3"><i class="fas fa-cogs me-2"></i>Management Sections</h3>
+
+    <!-- User Management -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white"><i class="fas fa-users-cog me-2"></i>User Management</div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-striped mb-0">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Name</th>
+                            <th>User Type</th>
+                            <th>Email</th>
+                            <th>Date Joined</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for u in users_paginated %}
+                        <tr>
+                            <td>{{ u.username }}</td>
+                            <td>{{ u.get_full_name|default:u.username }}</td>
+                            <td>{{ u.get_user_type_display }}</td>
+                            <td>{{ u.email }}</td>
+                            <td>{{ u.date_joined|date:"M d, Y" }}</td>
+                            <td>
+                                <a href="#" class="btn btn-sm btn-outline-info">Edit</a>
+                                {% if u != user %}
+                                    <a href="{% url 'delete_user' u.id %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this user?')">Delete</a>
+                                {% else %}
+                                    <span class="text-muted small">Current User</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="6" class="text-muted">No users found.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <nav class="mt-2">
+                <ul class="pagination justify-content-end">
+                    {% if users_paginated.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?user_page={{ users_paginated.previous_page_number }}">Previous</a></li>
+                    {% endif %}
+                    <li class="page-item disabled"><span class="page-link">Page {{ users_paginated.number }} of {{ users_paginated.paginator.num_pages }}</span></li>
+                    {% if users_paginated.has_next %}
+                    <li class="page-item"><a class="page-link" href="?user_page={{ users_paginated.next_page_number }}">Next</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Land Management -->
+    <div class="card mb-4">
+        <div class="card-header bg-success text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <div><i class="fas fa-map-marked-alt me-2"></i>Land Management</div>
+                {% if pending_lands %}
+                <div>
+                    <button type="button" class="btn btn-sm btn-outline-light" onclick="selectAllLands()">Select All</button>
+                    <button type="button" class="btn btn-sm btn-outline-light" onclick="deselectAllLands()">Deselect All</button>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="card-body p-0">
+            {% if pending_lands %}
+            <div class="p-3 bg-light border-bottom">
+                <form method="post" action="{% url 'bulk_approve_lands' %}" style="display: inline;">
+                    {% csrf_token %}
+                    <div id="land-checkboxes"></div>
+                    <button type="submit" class="btn btn-sm btn-success me-2">
+                        <i class="fas fa-check me-1"></i>Approve Selected
+                    </button>
+                </form>
+                <form method="post" action="{% url 'bulk_reject_lands' %}" style="display: inline;">
+                    {% csrf_token %}
+                    <div id="land-checkboxes-reject"></div>
+                    <button type="submit" class="btn btn-sm btn-danger">
+                        <i class="fas fa-times me-1"></i>Reject Selected
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+            <div class="table-responsive">
+                <table class="table table-striped mb-0">
+                    <thead>
+                        <tr>
+                            {% if pending_lands %}
+                            <th><input type="checkbox" id="select-all-lands" onchange="toggleAllLands(this)"></th>
+                            {% endif %}
+                            <th>Title</th>
+                            <th>Owner</th>
+                            <th>Location</th>
+                            <th>Size</th>
+                            <th>Date Listed</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for land in lands %}
+                        <tr>
+                            {% if pending_lands %}
+                            <td>
+                                {% if land.approval_status == 'PENDING' %}
+                                <input type="checkbox" name="land_ids" value="{{ land.id }}" class="land-checkbox">
+                                {% endif %}
+                            </td>
+                            {% endif %}
+                            <td>{{ land.title }}</td>
+                            <td>{{ land.owner.get_full_name|default:land.owner.username }}</td>
+                            <td>{{ land.location }}</td>
+                            <td>{{ land.size }} acres</td>
+                            <td>{{ land.date_listed|date:"M d, Y" }}</td>
+                            <td>
+                                {% if land.approval_status == 'PENDING' %}
+                                    <span class="badge bg-warning text-dark">Pending</span>
+                                {% elif land.approval_status == 'APPROVED' %}
+                                    <span class="badge bg-success">Approved</span>
+                                {% elif land.approval_status == 'REJECTED' %}
+                                    <span class="badge bg-danger">Rejected</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if land.approval_status == 'PENDING' and user.is_superuser %}
+                                    <a href="{% url 'approve_land' land.id %}" class="btn btn-sm btn-outline-success">Approve</a>
+                                    <a href="{% url 'reject_land' land.id %}" class="btn btn-sm btn-outline-danger">Reject</a>
+                                {% endif %}
+                                <a href="{% url 'edit_land' land.id %}" class="btn btn-sm btn-outline-info">Edit</a>
+                                <a href="{% url 'delete_land' land.id %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this land?')">Delete</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="{% if pending_lands %}8{% else %}7{% endif %}" class="text-muted">No lands found.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Project Management -->
+    <div class="card mb-4">
+        <div class="card-header bg-warning text-dark">
+            <div class="d-flex justify-content-between align-items-center">
+                <div><i class="fas fa-tractor me-2"></i>Project Management</div>
+                {% if pending_projects %}
+                <div>
+                    <button type="button" class="btn btn-sm btn-outline-dark" onclick="selectAllProjects()">Select All</button>
+                    <button type="button" class="btn btn-sm btn-outline-dark" onclick="deselectAllProjects()">Deselect All</button>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="card-body p-0">
+            {% if pending_projects %}
+            <div class="p-3 bg-light border-bottom">
+                <form method="post" action="{% url 'bulk_approve_projects' %}" style="display: inline;">
+                    {% csrf_token %}
+                    <div id="project-checkboxes"></div>
+                    <button type="submit" class="btn btn-sm btn-success me-2">
+                        <i class="fas fa-check me-1"></i>Approve Selected
+                    </button>
+                </form>
+                <form method="post" action="{% url 'bulk_reject_projects' %}" style="display: inline;">
+                    {% csrf_token %}
+                    <div id="project-checkboxes-reject"></div>
+                    <button type="submit" class="btn btn-sm btn-danger">
+                        <i class="fas fa-times me-1"></i>Reject Selected
+                    </button>
+                </form>
+            </div>
+            {% endif %}
+            <div class="table-responsive">
+                <table class="table table-striped mb-0">
+                    <thead>
+                        <tr>
+                            {% if pending_projects %}
+                            <th><input type="checkbox" id="select-all-projects" onchange="toggleAllProjects(this)"></th>
+                            {% endif %}
+                            <th>Crops</th>
+                            <th>Manager</th>
+                            <th>Land</th>
+                            <th>Status</th>
+                            <th>Approval</th>
+                            <th>Start Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for project in projects %}
+                        <tr>
+                            {% if pending_projects %}
+                            <td>
+                                {% if project.approval_status == 'PENDING' %}
+                                <input type="checkbox" name="project_ids" value="{{ project.id }}" class="project-checkbox">
+                                {% endif %}
+                            </td>
+                            {% endif %}
+                            <td>{{ project.crops }}</td>
+                            <td>{{ project.manager.get_full_name|default:project.manager.username }}</td>
+                            <td>{{ project.land.title }}</td>
+                            <td>{{ project.get_status_display }}</td>
+                            <td>
+                                {% if project.approval_status == 'PENDING' %}
+                                    <span class="badge bg-warning text-dark">Pending</span>
+                                {% elif project.approval_status == 'APPROVED' %}
+                                    <span class="badge bg-success">Approved</span>
+                                {% elif project.approval_status == 'REJECTED' %}
+                                    <span class="badge bg-danger">Rejected</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ project.start_date|date:"M d, Y" }}</td>
+                            <td>
+                                {% if project.approval_status == 'PENDING' and user.is_superuser %}
+                                    <a href="{% url 'approve_project' project.id %}" class="btn btn-sm btn-outline-success">Approve</a>
+                                    <a href="{% url 'reject_project' project.id %}" class="btn btn-sm btn-outline-danger">Reject</a>
+                                {% endif %}
+                                <a href="{% url 'edit_project' project.id %}" class="btn btn-sm btn-outline-info">Edit</a>
+                                <a href="{% url 'delete_project' project.id %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this project?')">Delete</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="{% if pending_projects %}8{% else %}7{% endif %}" class="text-muted">No projects found.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Marketplace Management -->
+    <div class="card mb-4">
+        <div class="card-header bg-info text-white"><i class="fas fa-store me-2"></i>Marketplace Management</div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-striped mb-0">
+                    <thead>
+                        <tr>
+                            <th>Listing</th>
+                            <th>Project</th>
+                            <th>Price</th>
+                            <th>Available</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for listing in listings %}
+                        <tr>
+                            <td>{{ listing.project.crops }}</td>
+                            <td>{{ listing.project.land.title }}</td>
+                            <td>₵{{ listing.price_per_unit }}</td>
+                            <td>{{ listing.available_quantity }} lbs</td>
+                            <td>
+                                <a href="#" class="btn btn-sm btn-outline-info">Edit</a>
+                                <a href="{% url 'delete_listing' listing.id %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this listing?')">Delete</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" class="text-muted">No listings found.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recommendations Management -->
+    <div class="card mb-4">
+        <div class="card-header bg-secondary text-white"><i class="fas fa-comments me-2"></i>Recommendations Management</div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-striped mb-0">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>User</th>
+                            <th>Content</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for rec in recommendations %}
+                        <tr>
+                            <td>{{ rec.title }}</td>
+                            <td>{{ rec.user.get_full_name|default:rec.user.username }}</td>
+                            <td>{{ rec.content|truncatewords:10 }}</td>
+                            <td>{{ rec.timestamp|date:"M d, Y" }}</td>
+                            <td>
+                                <a href="#" class="btn btn-sm btn-outline-info">Edit</a>
+                                <a href="{% url 'delete_recommendation' rec.id %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to delete this recommendation?')">Delete</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" class="text-muted">No recommendations found.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Community News Management -->
+    <div class="card mb-4">
+        <div class="card-header bg-dark text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <div><i class="fas fa-newspaper me-2"></i>Community News Management</div>
+                <a href="{% url 'farmcom:community_news_list' %}" class="btn btn-sm btn-outline-light">
+                    <i class="fas fa-cog me-1"></i>Manage News
+                </a>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6><i class="fas fa-info-circle me-2"></i>Quick Actions</h6>
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'farmcom:community_news_create' %}" class="btn btn-outline-success btn-sm">
+                            <i class="fas fa-plus me-2"></i>Create New News Item
+                        </a>
+                        <a href="{% url 'farmcom:community_news_list' %}" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-list me-2"></i>View All News Items
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h6><i class="fas fa-chart-bar me-2"></i>News Statistics</h6>
+                    <ul class="list-unstyled">
+                        <li><strong>Total News Items:</strong> <span class="badge bg-primary">{{ total_news_items|default:0 }}</span></li>
+                        <li><strong>Active News Items:</strong> <span class="badge bg-success">{{ active_news_items|default:0 }}</span></li>
+                        <li><strong>Inactive News Items:</strong> <span class="badge bg-secondary">{{ inactive_news_items|default:0 }}</span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <h3 class="mt-5 mb-3"><i class="fas fa-history me-2"></i>Recent Activity</h3>
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white"><i class="fas fa-user-plus me-2"></i>Recent Users</div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% for u in recent_users %}
+                        <li class="list-group-item">{{ u.get_full_name|default:u.username }} ({{ u.get_user_type_display }}) <span class="text-muted small">joined {{ u.date_joined|date:"M d, Y H:i" }}</span></li>
+                        {% empty %}
+                        <li class="list-group-item text-muted">No recent users.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-success text-white"><i class="fas fa-map-marked-alt me-2"></i>Recent Lands</div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% for land in recent_lands %}
+                        <li class="list-group-item">{{ land.title }} ({{ land.size }} acres, {{ land.location }}) <span class="text-muted small">listed {{ land.date_listed|date:"M d, Y H:i" }}</span></li>
+                        {% empty %}
+                        <li class="list-group-item text-muted">No recent lands.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-warning text-dark"><i class="fas fa-tractor me-2"></i>Recent Projects</div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% for project in recent_projects %}
+                        <li class="list-group-item">{{ project.crops }} ({{ project.land.title }}) <span class="text-muted small">started {{ project.start_date|date:"M d, Y" }}</span></li>
+                        {% empty %}
+                        <li class="list-group-item text-muted">No recent projects.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-secondary text-white"><i class="fas fa-comments me-2"></i>Recent Recommendations</div>
+                <div class="card-body">
+                    <ul class="list-group">
+                        {% for rec in recent_recommendations %}
+                        <li class="list-group-item">{{ rec.user.get_full_name|default:rec.user.username }}: {{ rec.content|truncatechars:40 }} <span class="text-muted small">{{ rec.timestamp|date:"M d, Y H:i" }}</span></li>
+                        {% empty %}
+                        <li class="list-group-item text-muted">No recent recommendations.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 
+
+<script>
+function toggleAllLands(checkbox) {
+    const landCheckboxes = document.querySelectorAll('.land-checkbox');
+    landCheckboxes.forEach(cb => cb.checked = checkbox.checked);
+}
+
+function selectAllLands() {
+    const landCheckboxes = document.querySelectorAll('.land-checkbox');
+    landCheckboxes.forEach(cb => cb.checked = true);
+    document.getElementById('select-all-lands').checked = true;
+}
+
+function deselectAllLands() {
+    const landCheckboxes = document.querySelectorAll('.land-checkbox');
+    landCheckboxes.forEach(cb => cb.checked = false);
+    document.getElementById('select-all-lands').checked = false;
+}
+
+function toggleAllProjects(checkbox) {
+    const projectCheckboxes = document.querySelectorAll('.project-checkbox');
+    projectCheckboxes.forEach(cb => cb.checked = checkbox.checked);
+}
+
+function selectAllProjects() {
+    const projectCheckboxes = document.querySelectorAll('.project-checkbox');
+    projectCheckboxes.forEach(cb => cb.checked = true);
+    document.getElementById('select-all-projects').checked = true;
+}
+
+function deselectAllProjects() {
+    const projectCheckboxes = document.querySelectorAll('.project-checkbox');
+    projectCheckboxes.forEach(cb => cb.checked = false);
+    document.getElementById('select-all-projects').checked = false;
+}
+
+function markNotificationRead(notificationId) {
+    fetch(`/accounts/mark-notification-read/${notificationId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            location.reload();
+        }
+    });
+}
+
+function markAllNotificationsRead() {
+    fetch('/accounts/mark-all-notifications-read/', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === 'success') {
+            location.reload();
+        }
+    });
+}
+</script> 

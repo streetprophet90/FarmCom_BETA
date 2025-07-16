@@ -11,6 +11,11 @@ class FarmingProject(models.Model):
         ('HARVESTED', 'Harvested'),
         ('COMPLETED', 'Completed'),
     )
+    APPROVAL_CHOICES = [
+        ('PENDING', 'Pending'),
+        ('APPROVED', 'Approved'),
+        ('REJECTED', 'Rejected'),
+    ]
 
     land = models.ForeignKey(Land, on_delete=models.CASCADE)
     manager = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='managed_projects')
@@ -21,6 +26,11 @@ class FarmingProject(models.Model):
     crops = models.CharField(max_length=200)
     estimated_yield = models.DecimalField(max_digits=10, decimal_places=2)
     actual_yield = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    approval_status = models.CharField(
+        max_length=10,
+        choices=APPROVAL_CHOICES,
+        default='PENDING'
+    )
 
     def __str__(self):
         return f"{self.crops} on {self.land.title}"

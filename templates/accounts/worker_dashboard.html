@@ -1,43 +1,397 @@
 {% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Worker Dashboard - FarmCom{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
-    <div class="alert alert-success mb-3">
-        Welcome, {{ user.first_name }}! You are in the <strong>{{ user.get_user_type_display }}</strong> Dashboard.
-    </div>
-    <h2>Farm Worker Dashboard</h2>
-    <hr>
-    <div class="card mb-4">
-        <div class="card-header bg-info text-white">
-            <i class="fas fa-chart-line me-2"></i>Project Progress
-        </div>
-        <div class="card-body">
-            {% if project_progress %}
-                {% for progress_item in project_progress %}
-                <div class="mb-3">
-                    <div class="d-flex justify-content-between align-items-center mb-1">
-                        <small class="text-muted">{{ progress_item.project.crops }}</small>
-                        <small class="text-muted">{{ progress_item.percentage|floatformat:0 }}%</small>
-                    </div>
-                    <div class="progress" style="height: 8px;">
-                        <div class="progress-bar 
-                            {% if progress_item.percentage >= 90 %}bg-success
-                            {% elif progress_item.percentage >= 60 %}bg-info
-                            {% elif progress_item.percentage >= 30 %}bg-warning
-                            {% else %}bg-secondary{% endif %}" 
-                            role="progressbar" 
-                            style="width: {{ progress_item.percentage }}%"
-                            aria-valuenow="{{ progress_item.percentage }}" 
-                            aria-valuemin="0" 
-                            aria-valuemax="100">
+<div class="container-fluid mt-4">
+    <!-- Welcome Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h2 class="mb-2">👋 Welcome back, {{ user.first_name|default:user.username }}!</h2>
+                            <p class="mb-0">Ready to tackle today's farm tasks? Here's your work overview.</p>
+                        </div>
+                        <div class="col-md-4 text-md-end">
+                            <a href="{% url 'logged_in_home' %}" class="btn btn-outline-light mb-2">
+                                <i class="fas fa-home me-1"></i>Back to Home
+                            </a>
+                            <div class="row">
+                                <div class="col-4">
+                                    <div class="text-center">
+                                        <h3 class="mb-1">8</h3>
+                                        <small>Tasks Today</small>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="text-center">
+                                        <h3 class="mb-1">6</h3>
+                                        <small>Completed</small>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="text-center">
+                                        <h3 class="mb-1">85%</h3>
+                                        <small>Efficiency</small>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <small class="text-muted">{{ progress_item.status }}</small>
                 </div>
-                {% endfor %}
-            {% else %}
-                <p class="text-muted">No projects found.</p>
-            {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">⚡ Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-2 col-sm-4 col-6 mb-3">
+                            <a href="#" class="btn btn-outline-success w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3">
+                                <span class="fs-3 mb-2">📝</span>
+                                <span>Log Activity</span>
+                            </a>
+                        </div>
+                        <div class="col-md-2 col-sm-4 col-6 mb-3">
+                            <a href="#" class="btn btn-outline-success w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3">
+                                <span class="fs-3 mb-2">✅</span>
+                                <span>Complete Task</span>
+                            </a>
+                        </div>
+                        <div class="col-md-2 col-sm-4 col-6 mb-3">
+                            <a href="#" class="btn btn-outline-success w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3">
+                                <span class="fs-3 mb-2">📱</span>
+                                <span>Team Chat</span>
+                            </a>
+                        </div>
+                        <div class="col-md-2 col-sm-4 col-6 mb-3">
+                            <a href="#" class="btn btn-outline-success w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3">
+                                <span class="fs-3 mb-2">📊</span>
+                                <span>Report Issue</span>
+                            </a>
+                        </div>
+                        <div class="col-md-2 col-sm-4 col-6 mb-3">
+                            <a href="#" class="btn btn-outline-success w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3">
+                                <span class="fs-3 mb-2">🔧</span>
+                                <span>Equipment Check</span>
+                            </a>
+                        </div>
+                        <div class="col-md-2 col-sm-4 col-6 mb-3">
+                            <a href="#" class="btn btn-outline-success w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3">
+                                <span class="fs-3 mb-2">📅</span>
+                                <span>View Schedule</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Dashboard Content -->
+    <div class="row">
+        <!-- Left Column -->
+        <div class="col-lg-8">
+            <!-- Today's Tasks -->
+            <div class="card mb-4">
+                <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">📋 Today's Tasks</h5>
+                    <span class="badge bg-danger">3</span>
+                </div>
+                <div class="card-body">
+                    <div class="task-item border rounded p-3 mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="mb-0">Harvest Corn Field A</h6>
+                            <span class="badge bg-danger">High</span>
+                        </div>
+                        <div class="progress mb-2" style="height: 8px;">
+                            <div class="progress-bar bg-success" style="width: 75%"></div>
+                        </div>
+                        <small class="text-muted">75% complete • Due: 2:00 PM</small>
+                    </div>
+                    
+                    <div class="task-item border rounded p-3 mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="mb-0">Irrigation System Check</h6>
+                            <span class="badge bg-warning">Medium</span>
+                        </div>
+                        <div class="progress mb-2" style="height: 8px;">
+                            <div class="progress-bar bg-success" style="width: 100%"></div>
+                        </div>
+                        <small class="text-muted">Completed • 10:30 AM</small>
+                    </div>
+                    
+                    <div class="task-item border rounded p-3 mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <h6 class="mb-0">Fertilize Vegetable Garden</h6>
+                            <span class="badge bg-secondary">Low</span>
+                        </div>
+                        <div class="progress mb-2" style="height: 8px;">
+                            <div class="progress-bar bg-success" style="width: 25%"></div>
+                        </div>
+                        <small class="text-muted">25% complete • Due: 4:00 PM</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">📝 Recent Activity</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-start mb-3">
+                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                            🌾
+                        </div>
+                        <div>
+                            <h6 class="mb-1">Completed Harvest Task</h6>
+                            <p class="text-muted mb-0">Finished harvesting corn field A • 2 hours ago</p>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex align-items-start mb-3">
+                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                            💧
+                        </div>
+                        <div>
+                            <h6 class="mb-1">Irrigation System Check</h6>
+                            <p class="text-muted mb-0">Verified all sprinklers working properly • 4 hours ago</p>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex align-items-start">
+                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" style="width: 40px; height: 40px;">
+                            🔧
+                        </div>
+                        <div>
+                            <h6 class="mb-1">Equipment Maintenance</h6>
+                            <p class="text-muted mb-0">Performed routine tractor maintenance • 6 hours ago</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="col-lg-4">
+            <!-- Weather Widget -->
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white text-center">
+                    <h5 class="mb-0">🌤️ Weather</h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="fs-1 mb-2">☀️</div>
+                    <h2 class="mb-2">24°C</h2>
+                    <p class="mb-0">Sunny • Perfect for outdoor work</p>
+                </div>
+            </div>
+
+            <!-- Equipment Status -->
+            <div class="card mb-4">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0">🔧 Equipment Status</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6 mb-3">
+                            <div class="text-center p-2 border rounded bg-success bg-opacity-10">
+                                <div class="fs-4 mb-1">🚜</div>
+                                <div class="fw-bold">Tractor</div>
+                                <small class="text-success">Operational</small>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="text-center p-2 border rounded bg-warning bg-opacity-10">
+                                <div class="fs-4 mb-1">💧</div>
+                                <div class="fw-bold">Irrigation</div>
+                                <small class="text-warning">Maintenance</small>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="text-center p-2 border rounded bg-success bg-opacity-10">
+                                <div class="fs-4 mb-1">🌾</div>
+                                <div class="fw-bold">Harvester</div>
+                                <small class="text-success">Operational</small>
+                            </div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="text-center p-2 border rounded bg-danger bg-opacity-10">
+                                <div class="fs-4 mb-1">🔧</div>
+                                <div class="fw-bold">Seeder</div>
+                                <small class="text-danger">Repair</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Work Schedule -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">📅 Work Schedule</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="mb-0">December 2024</h6>
+                        <div>
+                            <button class="btn btn-sm btn-outline-primary">‹</button>
+                            <button class="btn btn-sm btn-outline-primary">›</button>
+                        </div>
+                    </div>
+                    <div class="row g-1">
+                        <div class="col text-center p-2 border rounded">1</div>
+                        <div class="col text-center p-2 border rounded">2</div>
+                        <div class="col text-center p-2 border rounded bg-success text-white">3</div>
+                        <div class="col text-center p-2 border rounded bg-success text-white">4</div>
+                        <div class="col text-center p-2 border rounded">5</div>
+                        <div class="col text-center p-2 border rounded bg-success text-white">6</div>
+                        <div class="col text-center p-2 border rounded">7</div>
+                        <div class="col text-center p-2 border rounded bg-success text-white">8</div>
+                        <div class="col text-center p-2 border rounded">9</div>
+                        <div class="col text-center p-2 border rounded bg-success text-white">10</div>
+                        <div class="col text-center p-2 border rounded bg-primary text-white fw-bold">11</div>
+                        <div class="col text-center p-2 border rounded bg-success text-white">12</div>
+                        <div class="col text-center p-2 border rounded">13</div>
+                        <div class="col text-center p-2 border rounded bg-success text-white">14</div>
+                        <div class="col text-center p-2 border rounded">15</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Team Messages -->
+            <div class="card mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">💬 Team Messages</h5>
+                </div>
+                <div class="card-body">
+                    <div class="border-start border-primary ps-3 mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <strong>John (Supervisor)</strong>
+                            <small class="text-muted">30 min ago</small>
+                        </div>
+                        <p class="mb-0">Great work on the irrigation check! The system is running perfectly now.</p>
+                    </div>
+                    
+                    <div class="border-start border-primary ps-3 mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <strong>Sarah (Team Lead)</strong>
+                            <small class="text-muted">1 hour ago</small>
+                        </div>
+                        <p class="mb-0">Reminder: Safety meeting at 3 PM today. Don't forget your PPE!</p>
+                    </div>
+                    
+                    <div class="border-start border-primary ps-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <strong>Mike (Co-worker)</strong>
+                            <small class="text-muted">2 hours ago</small>
+                        </div>
+                        <p class="mb-0">Need help with the harvester setup? I'm available after lunch.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Performance Stats -->
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">📊 Performance Stats</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3 p-3 border rounded bg-light">
+                        <div class="fs-4 mb-2">📈</div>
+                        <small class="text-muted">Performance Chart<br>Weekly productivity metrics</small>
+                    </div>
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <h4 class="text-success mb-1">92%</h4>
+                            <small class="text-muted">Task Completion</small>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-info mb-1">8.5 hrs</h4>
+                            <small class="text-muted">Avg. Work Hours</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Quick action buttons
+    const actionBtns = document.querySelectorAll('.btn-outline-success');
+    actionBtns.forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const action = this.querySelector('span:last-child').textContent;
+            showNotification(`Action: ${action} - Feature coming soon!`);
+        });
+    });
+
+    // Task interactions
+    const taskItems = document.querySelectorAll('.task-item');
+    taskItems.forEach(item => {
+        item.addEventListener('click', function() {
+            this.style.transform = 'scale(1.02)';
+            setTimeout(() => {
+                this.style.transform = '';
+            }, 200);
+        });
+    });
+
+    // Equipment interactions
+    const equipmentItems = document.querySelectorAll('.border.rounded');
+    equipmentItems.forEach(item => {
+        if (item.querySelector('.fs-4')) {
+            item.addEventListener('click', function() {
+                const status = this.querySelector('small').textContent;
+                showNotification(`Equipment Status: ${status}`);
+            });
+        }
+    });
+
+    // Calendar interactions
+    const calendarDays = document.querySelectorAll('.col.text-center');
+    calendarDays.forEach(day => {
+        day.addEventListener('click', function() {
+            if (this.classList.contains('bg-success')) {
+                showNotification('Work scheduled for this day');
+            }
+        });
+    });
+
+    // Notification function
+    function showNotification(message) {
+        const notification = document.createElement('div');
+        notification.className = 'alert alert-success position-fixed';
+        notification.style.cssText = `
+            top: 20px;
+            right: 20px;
+            z-index: 1050;
+            min-width: 300px;
+        `;
+        notification.innerHTML = `
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            ${message}
+        `;
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.remove();
+            }
+        }, 3000);
+    }
+});
+</script>
 {% endblock %} 

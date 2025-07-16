@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-history me-2"></i>Admin Audit Logs</h2>
+        <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+        </a>
+    </div>
+    
+    <div class="card shadow">
+        <div class="card-header bg-dark text-white">
+            <h5 class="mb-0"><i class="fas fa-list me-2"></i>Action History</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-striped mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Admin User</th>
+                            <th>Action</th>
+                            <th>Target Object</th>
+                            <th>Details</th>
+                            <th>IP Address</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in logs %}
+                        <tr>
+                            <td>{{ log.timestamp|date:"M d, Y H:i:s" }}</td>
+                            <td>
+                                <span class="badge bg-primary">{{ log.admin_user.username }}</span>
+                            </td>
+                            <td>
+                                {% if 'APPROVE' in log.action_type %}
+                                    <span class="badge bg-success">{{ log.get_action_type_display }}</span>
+                                {% elif 'REJECT' in log.action_type %}
+                                    <span class="badge bg-danger">{{ log.get_action_type_display }}</span>
+                                {% elif 'DELETE' in log.action_type %}
+                                    <span class="badge bg-warning text-dark">{{ log.get_action_type_display }}</span>
+                                {% elif 'EDIT' in log.action_type %}
+                                    <span class="badge bg-info">{{ log.get_action_type_display }}</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">{{ log.get_action_type_display }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <strong>{{ log.target_object_type }}</strong><br>
+                                <small class="text-muted">{{ log.target_object_name }}</small>
+                            </td>
+                            <td>
+                                {% if log.details %}
+                                    <small>{{ log.details|truncatewords:10 }}</small>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <small class="text-muted">{{ log.ip_address|default:"-" }}</small>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-4">
+                                <i class="fas fa-info-circle me-2"></i>No audit logs found.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            {% if logs.has_other_pages %}
+            <div class="card-footer">
+                <nav aria-label="Audit logs pagination">
+                    <ul class="pagination justify-content-center mb-0">
+                        {% if logs.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ logs.previous_page_number }}">Previous</a>
+                            </li>
+                        {% endif %}
+                        
+                        {% for num in logs.paginator.page_range %}
+                            {% if logs.number == num %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ num }}</span>
+                                </li>
+                            {% elif num > logs.number|add:'-3' and num < logs.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if logs.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ logs.next_page_number }}">Next</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Action Summary</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <h4 class="text-success">{{ logs|length }}</h4>
+                            <small class="text-muted">Total Actions</small>
+                        </div>
+                        <div class="col-6">
+                            <h4 class="text-primary">{{ logs.0.timestamp|date:"M d" }}</h4>
+                            <small class="text-muted">Latest Action</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h6 class="mb-0"><i class="fas fa-shield-alt me-2"></i>Security Note</h6>
+                </div>
+                <div class="card-body">
+                    <small class="text-muted">
+                        <i class="fas fa-info-circle me-1"></i>
+                        All admin actions are logged for security and audit purposes. 
+                        This includes IP addresses and user agent information.
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

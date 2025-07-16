@@ -14,6 +14,11 @@ class Land(models.Model):
     soil_type = models.CharField(max_length=50)
     water_source = models.CharField(max_length=50)
     date_listed = models.DateTimeField(auto_now_add=True)
+    approval_status = models.CharField(
+        max_length=10,
+        choices=[('PENDING', 'Pending'), ('APPROVED', 'Approved'), ('REJECTED', 'Rejected')],
+        default='PENDING'
+    )
 
     def __str__(self):
         return f"{self.title} ({self.size} acres) in {self.location}"

@@ -1,0 +1,321 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-chart-line me-2"></i>Admin Analytics & Reporting</h2>
+        <div>
+            <a href="{% url 'admin_dashboard' %}" class="btn btn-secondary me-2">
+                <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+            </a>
+            <div class="btn-group">
+                <button type="button" class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">
+                    <i class="fas fa-download me-2"></i>Generate Reports
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="{% url 'generate_report' %}?type=user_report">User Report</a></li>
+                    <li><a class="dropdown-item" href="{% url 'generate_report' %}?type=land_report">Land Report</a></li>
+                    <li><a class="dropdown-item" href="{% url 'generate_report' %}?type=project_report">Project Report</a></li>
+                    <li><a class="dropdown-item" href="{% url 'generate_report' %}?type=activity_report">Activity Report</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Metrics Row -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ total_users }}</h4>
+                            <p class="mb-0">Total Users</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-users fa-2x"></i>
+                        </div>
+                    </div>
+                    <small>{{ new_users_30d }} new in 30 days</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ total_lands }}</h4>
+                            <p class="mb-0">Total Lands</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-map-marked-alt fa-2x"></i>
+                        </div>
+                    </div>
+                    <small>{{ avg_land_size|floatformat:1 }} avg acres</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ total_projects }}</h4>
+                            <p class="mb-0">Total Projects</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-tractor fa-2x"></i>
+                        </div>
+                    </div>
+                    <small>{{ avg_project_yield|floatformat:1 }} avg yield</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h4>{{ total_activities }}</h4>
+                            <p class="mb-0">Total Activities</p>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="fas fa-tasks fa-2x"></i>
+                        </div>
+                    </div>
+                    <small>{{ activities_30d }} in 30 days</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row mb-4">
+        <div class="col-md-6 mb-3">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>User Distribution</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="userTypeChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-3">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Land Status Distribution</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="landStatusChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-6 mb-3">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Daily Activity Trends (30 Days)</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="activityTrendChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-3">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Admin Actions by Type</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="adminActionsChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-6 mb-3">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0"><i class="fas fa-list me-2"></i>Top Locations</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Location</th>
+                                    <th>Lands</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for location in lands_by_location %}
+                                <tr>
+                                    <td>{{ location.location }}</td>
+                                    <td><span class="badge bg-primary">{{ location.count }}</span></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-3">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0"><i class="fas fa-list me-2"></i>Most Active Users</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Activities</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user_activity in activities_by_user %}
+                                <tr>
+                                    <td>{{ user_activity.user__username }}</td>
+                                    <td><span class="badge bg-success">{{ user_activity.count }}</span></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity Summary -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="mb-0"><i class="fas fa-clock me-2"></i>30-Day Activity Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <h4 class="text-primary">{{ new_users_30d }}</h4>
+                            <small class="text-muted">New Users</small>
+                        </div>
+                        <div class="col-md-3">
+                            <h4 class="text-success">{{ activities_30d }}</h4>
+                            <small class="text-muted">Activities</small>
+                        </div>
+                        <div class="col-md-3">
+                            <h4 class="text-warning">{{ uploads_30d }}</h4>
+                            <small class="text-muted">Uploads</small>
+                        </div>
+                        <div class="col-md-3">
+                            <h4 class="text-info">{{ actions_30d }}</h4>
+                            <small class="text-muted">Admin Actions</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const chartData = {{ chart_data|safe }};
+
+// User Type Chart
+const userTypeCtx = document.getElementById('userTypeChart').getContext('2d');
+new Chart(userTypeCtx, {
+    type: 'doughnut',
+    data: {
+        labels: chartData.users_by_type.map(item => item.user_type),
+        datasets: [{
+            data: chartData.users_by_type.map(item => item.count),
+            backgroundColor: ['#007bff', '#28a745', '#ffc107', '#dc3545', '#6c757d', '#17a2b8']
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+// Land Status Chart
+const landStatusCtx = document.getElementById('landStatusChart').getContext('2d');
+new Chart(landStatusCtx, {
+    type: 'pie',
+    data: {
+        labels: chartData.lands_by_status.map(item => item.approval_status),
+        datasets: [{
+            data: chartData.lands_by_status.map(item => item.count),
+            backgroundColor: ['#ffc107', '#28a745', '#dc3545']
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'bottom'
+            }
+        }
+    }
+});
+
+// Activity Trend Chart
+const activityTrendCtx = document.getElementById('activityTrendChart').getContext('2d');
+new Chart(activityTrendCtx, {
+    type: 'line',
+    data: {
+        labels: chartData.daily_activities.map(item => item.date),
+        datasets: [{
+            label: 'Daily Activities',
+            data: chartData.daily_activities.map(item => item.count),
+            borderColor: '#007bff',
+            backgroundColor: 'rgba(0, 123, 255, 0.1)',
+            tension: 0.1
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+
+// Admin Actions Chart
+const adminActionsCtx = document.getElementById('adminActionsChart').getContext('2d');
+new Chart(adminActionsCtx, {
+    type: 'bar',
+    data: {
+        labels: chartData.actions_by_type.map(item => item.action_type.replace('_', ' ')),
+        datasets: [{
+            label: 'Actions',
+            data: chartData.actions_by_type.map(item => item.count),
+            backgroundColor: '#28a745'
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
+});
+</script>
+{% endblock %} 

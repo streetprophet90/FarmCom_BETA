@@ -1,51 +1,350 @@
 {% extends 'base.html' %}
+
+{% block title %}Investor Dashboard - FarmCom{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
-    <div class="alert alert-success mb-3">
-        Welcome, {{ user.first_name }}! You are in the <strong>{{ user.get_user_type_display }}</strong> Dashboard.
-    </div>
-    <h2>Investor Dashboard</h2>
-    <hr>
-    <div class="card mb-4">
-        <div class="card-header bg-warning text-dark">
-            <i class="fas fa-coins me-2"></i>Your Earnings
-        </div>
-        <div class="card-body">
-            <p class="lead">Total Earnings: <strong>₵0.00</strong> <span class="text-muted">(Coming Soon)</span></p>
-        </div>
-    </div>
-    <div class="card mb-4">
-        <div class="card-header bg-info text-white">
-            <i class="fas fa-chart-line me-2"></i>Project Progress
-        </div>
-        <div class="card-body">
-            {% if project_progress %}
-                {% for progress_item in project_progress %}
-                <div class="mb-3">
-                    <div class="d-flex justify-content-between align-items-center mb-1">
-                        <small class="text-muted">{{ progress_item.project.crops }}</small>
-                        <small class="text-muted">{{ progress_item.percentage|floatformat:0 }}%</small>
-                    </div>
-                    <div class="progress" style="height: 8px;">
-                        <div class="progress-bar 
-                            {% if progress_item.percentage >= 90 %}bg-success
-                            {% elif progress_item.percentage >= 60 %}bg-info
-                            {% elif progress_item.percentage >= 30 %}bg-warning
-                            {% else %}bg-secondary{% endif %}" 
-                            role="progressbar" 
-                            style="width: {{ progress_item.percentage }}%"
-                            aria-valuenow="{{ progress_item.percentage }}" 
-                            aria-valuemin="0" 
-                            aria-valuemax="100">
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-gradient-primary text-white">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h1 class="display-6 mb-3">
+                                <i class="fas fa-chart-line me-3"></i>
+                                Investor Dashboard
+                            </h1>
+                            <p class="lead mb-0">Monitor agricultural projects and investment opportunities</p>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <a href="{% url 'logged_in_home' %}" class="btn btn-light">
+                                <i class="fas fa-home me-2"></i>Back to Home
+                            </a>
                         </div>
                     </div>
-                    <small class="text-muted">{{ progress_item.status }}</small>
                 </div>
-                {% endfor %}
-            {% else %}
-                <p class="text-muted">No projects found.</p>
-            {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <i class="fas fa-seedling fa-3x text-success mb-3"></i>
+                    <h3 class="card-title">{{ project_progress|length }}</h3>
+                    <p class="card-text">Available Projects</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <i class="fas fa-play-circle fa-3x text-primary mb-3"></i>
+                    <h3 class="card-title">{{ project_progress|dictsort:"percentage"|last|length }}</h3>
+                    <p class="card-text">Active Projects</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <i class="fas fa-trophy fa-3x text-warning mb-3"></i>
+                    <h3 class="card-title">85%</h3>
+                    <p class="card-text">Avg. Success Rate</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <i class="fas fa-dollar-sign fa-3x text-info mb-3"></i>
+                    <h3 class="card-title">$2.5M</h3>
+                    <p class="card-text">Total Investment Value</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Project Analytics -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Project Performance Analytics</h5>
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-outline-primary btn-sm active" onclick="filterProjects('all')">All</button>
+                        <button type="button" class="btn btn-outline-success btn-sm" onclick="filterProjects('active')">Active</button>
+                        <button type="button" class="btn btn-outline-warning btn-sm" onclick="filterProjects('planning')">Planning</button>
+                        <button type="button" class="btn btn-outline-info btn-sm" onclick="filterProjects('completed')">Completed</button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row" id="projects-container">
+                        {% for project_data in project_progress %}
+                        <div class="col-md-6 col-lg-4 mb-4 project-card" data-status="{{ project_data.project.status|lower }}">
+                            <div class="card h-100">
+                                <div class="card-header">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0">{{ project_data.project.crops }}</h6>
+                                        <span class="badge bg-{% if project_data.project.status == 'ACTIVE' %}success{% elif project_data.project.status == 'PLANNING' %}warning{% elif project_data.project.status == 'COMPLETED' %}info{% else %}secondary{% endif %}">
+                                            {{ project_data.status }}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <strong>Location:</strong> {{ project_data.project.land.location }}
+                                    </div>
+                                    <div class="mb-3">
+                                        <strong>Manager:</strong> {{ project_data.project.manager.get_full_name|default:project_data.project.manager.username }}
+                                    </div>
+                                    <div class="mb-3">
+                                        <strong>Progress:</strong>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-success" role="progressbar" style="width: {{ project_data.percentage }}%" aria-valuenow="{{ project_data.percentage }}" aria-valuemin="0" aria-valuemax="100">
+                                                {{ project_data.percentage }}%
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% if project_data.project.estimated_yield %}
+                                    <div class="mb-3">
+                                        <strong>Estimated Yield:</strong> {{ project_data.project.estimated_yield }} tons
+                                    </div>
+                                    {% endif %}
+                                    <div class="mb-3">
+                                        <strong>Duration:</strong> {{ project_data.project.start_date|date:"M Y" }} - 
+                                        {% if project_data.project.end_date %}
+                                            {{ project_data.project.end_date|date:"M Y" }}
+                                        {% else %}
+                                            Ongoing
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="card-footer">
+                                    <div class="d-grid gap-2">
+                                        <a href="{% url 'project_list' %}" class="btn btn-outline-primary btn-sm">
+                                            <i class="fas fa-eye me-1"></i>View Details
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="col-12">
+                            <div class="text-center py-5">
+                                <i class="fas fa-seedling fa-3x text-muted mb-3"></i>
+                                <h5 class="text-muted">No projects available</h5>
+                                <p class="text-muted">Check back later for new investment opportunities</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Market Trends -->
+    <div class="row mb-4">
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-chart-line me-2"></i>Market Trends</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="marketTrendsChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-pie-chart me-2"></i>Crop Distribution</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="cropDistributionChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'listing_list' %}" class="btn btn-outline-primary w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3">
+                                <i class="fas fa-store fa-2x mb-2"></i>
+                                <span>Browse Marketplace</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'land_list' %}" class="btn btn-outline-success w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3">
+                                <i class="fas fa-map-marked-alt fa-2x mb-2"></i>
+                                <span>Explore Lands</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'contact_support' %}" class="btn btn-outline-info w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3">
+                                <i class="fas fa-headset fa-2x mb-2"></i>
+                                <span>Contact Support</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'investor_home' %}" class="btn btn-outline-warning w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3">
+                                <i class="fas fa-home fa-2x mb-2"></i>
+                                <span>Back to Home</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Investment Tips -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-light">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-lightbulb me-2"></i>Investment Insights</h5>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="d-flex">
+                                <i class="fas fa-chart-up text-success me-2 mt-1"></i>
+                                <div>
+                                    <strong>High-Performing Crops</strong>
+                                    <p class="small text-muted mb-0">Cocoa and oil palm show the highest returns</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="d-flex">
+                                <i class="fas fa-map-marker-alt text-primary me-2 mt-1"></i>
+                                <div>
+                                    <strong>Regional Opportunities</strong>
+                                    <p class="small text-muted mb-0">Ashanti and Bono regions lead in productivity</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="d-flex">
+                                <i class="fas fa-calendar text-warning me-2 mt-1"></i>
+                                <div>
+                                    <strong>Seasonal Trends</strong>
+                                    <p class="small text-muted mb-0">Q2 and Q3 show peak harvest periods</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
+<style>
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+}
+.card {
+    transition: transform 0.2s;
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+.card:hover {
+    transform: translateY(-2px);
+}
+.btn {
+    transition: all 0.2s;
+}
+.btn:hover {
+    transform: translateY(-1px);
+}
+.project-card {
+    transition: all 0.3s ease;
+}
+.project-card.hidden {
+    display: none;
+}
+</style>
+
+<script>
+// Project filtering
+function filterProjects(status) {
+    const cards = document.querySelectorAll('.project-card');
+    const buttons = document.querySelectorAll('.btn-group .btn');
+    
+    // Update active button
+    buttons.forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    cards.forEach(card => {
+        if (status === 'all' || card.dataset.status === status) {
+            card.classList.remove('hidden');
+        } else {
+            card.classList.add('hidden');
+        }
+    });
+}
+
+// Market Trends Chart
+const marketTrendsCtx = document.getElementById('marketTrendsChart').getContext('2d');
+new Chart(marketTrendsCtx, {
+    type: 'line',
+    data: {
+        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+        datasets: [{
+            label: 'Market Value (GHS)',
+            data: [1200000, 1350000, 1420000, 1580000, 1650000, 1800000],
+            borderColor: 'rgb(75, 192, 192)',
+            tension: 0.1
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'top',
+            }
+        }
+    }
+});
+
+// Crop Distribution Chart
+const cropDistributionCtx = document.getElementById('cropDistributionChart').getContext('2d');
+new Chart(cropDistributionCtx, {
+    type: 'doughnut',
+    data: {
+        labels: ['Cocoa', 'Oil Palm', 'Rice', 'Maize', 'Cassava', 'Others'],
+        datasets: [{
+            data: [30, 25, 15, 12, 10, 8],
+            backgroundColor: [
+                '#FF6384',
+                '#36A2EB',
+                '#FFCE56',
+                '#4BC0C0',
+                '#9966FF',
+                '#FF9F40'
+            ]
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'bottom',
+            }
+        }
+    }
+});
+</script>
 {% endblock %} 

@@ -1,0 +1,234 @@
+{% extends 'base.html' %}
+
+{% block title %}Investor Home - FarmCom{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Welcome Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-gradient-primary text-white">
+                <div class="card-body text-center">
+                    <h1 class="display-6 mb-3">
+                        <i class="fas fa-chart-line me-3"></i>
+                        Welcome, {{ user.get_full_name|default:user.username }}!
+                    </h1>
+                    <p class="lead mb-4">Discover investment opportunities in Ghana's agricultural sector</p>
+                    <a href="{% url 'investor_dashboard' %}" class="btn btn-light btn-lg">
+                        <i class="fas fa-tachometer-alt me-2"></i>Go to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <i class="fas fa-seedling fa-3x text-success mb-3"></i>
+                    <h3 class="card-title">{{ total_projects }}</h3>
+                    <p class="card-text">Total Projects</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <i class="fas fa-play-circle fa-3x text-primary mb-3"></i>
+                    <h3 class="card-title">{{ active_projects }}</h3>
+                    <p class="card-text">Active Projects</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <i class="fas fa-map-marked-alt fa-3x text-warning mb-3"></i>
+                    <h3 class="card-title">{{ total_lands }}</h3>
+                    <p class="card-text">Available Lands</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <i class="fas fa-store fa-3x text-info mb-3"></i>
+                    <h3 class="card-title">{{ total_listings }}</h3>
+                    <p class="card-text">Marketplace Listings</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'listing_list' %}" class="btn btn-outline-primary w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3">
+                                <i class="fas fa-store fa-2x mb-2"></i>
+                                <span>Browse Marketplace</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'project_list' %}" class="btn btn-outline-success w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3">
+                                <i class="fas fa-tractor fa-2x mb-2"></i>
+                                <span>View Projects</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'land_list' %}" class="btn btn-outline-warning w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3">
+                                <i class="fas fa-map-marked-alt fa-2x mb-2"></i>
+                                <span>Explore Lands</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <a href="{% url 'contact_support' %}" class="btn btn-outline-info w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3">
+                                <i class="fas fa-headset fa-2x mb-2"></i>
+                                <span>Contact Support</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Community News & Updates -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-newspaper me-2"></i>Community News & Updates</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="card border h-100">
+                                <div class="card-body">
+                                    <h6 class="card-title text-primary">
+                                        <i class="fas fa-rocket me-2"></i>FarmCom Launches New Dashboard!
+                                    </h6>
+                                    <p class="card-text">Monitor your progress and team with our new dashboards.</p>
+                                    <small class="text-muted">2 days ago</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="card border h-100">
+                                <div class="card-body">
+                                    <h6 class="card-title text-success">
+                                        <i class="fas fa-calendar me-2"></i>Upcoming Community Event
+                                    </h6>
+                                    <p class="card-text">Join us for the annual FarmCom networking event this August.</p>
+                                    <small class="text-muted">1 week ago</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="card border h-100">
+                                <div class="card-body">
+                                    <h6 class="card-title text-warning">
+                                        <i class="fas fa-leaf me-2"></i>Tips for Sustainable Farming
+                                    </h6>
+                                    <p class="card-text">Check out our latest blog post on sustainable agriculture practices.</p>
+                                    <small class="text-muted">3 days ago</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Marketplace Activity -->
+    <div class="row mb-4">
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-store me-2"></i>Recent Marketplace Listings</h5>
+                    <a href="{% url 'listing_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    {% if recent_listings %}
+                        {% for listing in recent_listings %}
+                        <div class="d-flex justify-content-between align-items-center mb-3 p-2 border-bottom">
+                            <div>
+                                <h6 class="mb-1">{{ listing.project.crops }}</h6>
+                                <small class="text-muted">
+                                    <i class="fas fa-map-marker-alt me-1"></i>{{ listing.project.land.location }}
+                                </small>
+                            </div>
+                            <div class="text-end">
+                                <strong class="text-success">${{ listing.price_per_unit }}/unit</strong>
+                                <br>
+                                <small class="text-muted">{{ listing.available_quantity }} units</small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center">No recent marketplace activity</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Performing Projects -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-trophy me-2"></i>Top Performing Projects</h5>
+                    <a href="{% url 'project_list' %}" class="btn btn-sm btn-outline-success">View All</a>
+                </div>
+                <div class="card-body">
+                    {% if top_projects %}
+                        {% for project in top_projects %}
+                        <div class="d-flex justify-content-between align-items-center mb-3 p-2 border-bottom">
+                            <div>
+                                <h6 class="mb-1">{{ project.crops }}</h6>
+                                <small class="text-muted">
+                                    <i class="fas fa-user me-1"></i>{{ project.manager.get_full_name|default:project.manager.username }}
+                                </small>
+                            </div>
+                            <div class="text-end">
+                                <strong class="text-success">{{ project.estimated_yield }} tons</strong>
+                                <br>
+                                <small class="text-muted">{{ project.get_status_display }}</small>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center">No projects available</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.bg-gradient-primary {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+}
+.card {
+    transition: transform 0.2s;
+}
+.card:hover {
+    transform: translateY(-2px);
+}
+.btn {
+    transition: all 0.2s;
+}
+.btn:hover {
+    transform: translateY(-1px);
+}
+</style>
+{% endblock %} 

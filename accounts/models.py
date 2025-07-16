@@ -80,3 +80,82 @@ class Recommendation(models.Model):
     def __str__(self):
         target = self.project or self.land
         return f"{self.user.username} on {target}: {self.content[:30]}..."
+
+class Notification(models.Model):
+    NOTIFICATION_TYPES = [
+        ('LAND_PENDING', 'Land Pending Approval'),
+        ('PROJECT_PENDING', 'Project Pending Approval'),
+        ('LAND_APPROVED', 'Land Approved'),
+        ('LAND_REJECTED', 'Land Rejected'),
+        ('PROJECT_APPROVED', 'Project Approved'),
+        ('PROJECT_REJECTED', 'Project Rejected'),
+        ('NEW_USER', 'New User Registration'),
+        ('NEW_RECOMMENDATION', 'New Recommendation'),
+        ('ACTIVITY_CONFIRMED', 'Activity Confirmed'),
+        ('ACTIVITY_DISAPPROVED', 'Activity Disapproved'),
+        ('NEW_ACTIVITY', 'New Activity Logged'),
+        ('NEW_UPLOAD', 'New Image Upload'),
+        ('PROJECT_UPDATE', 'Project Status Update'),
+        ('TEAM_MESSAGE', 'Team Message'),
+        ('TASK_ASSIGNED', 'Task Assigned'),
+        ('TASK_COMPLETED', 'Task Completed'),
+        ('WEATHER_ALERT', 'Weather Alert'),
+        ('EQUIPMENT_ISSUE', 'Equipment Issue'),
+        ('MARKETPLACE_ORDER', 'Marketplace Order'),
+        ('PAYMENT_RECEIVED', 'Payment Received'),
+        ('SYSTEM_MAINTENANCE', 'System Maintenance'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    notification_type = models.CharField(max_length=20, choices=NOTIFICATION_TYPES)
+    title = models.CharField(max_length=200)
+    message = models.TextField()
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    related_object_id = models.IntegerField(null=True, blank=True)
+    related_object_type = models.CharField(max_length=50, null=True, blank=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.notification_type} - {self.title}"
+
+    def mark_as_read(self):
+        self.is_read = True
+        self.save()
+
+class AdminAuditLog(models.Model):
+    ACTION_TYPES = [
+        ('APPROVE_LAND', 'Approve Land'),
+        ('REJECT_LAND', 'Reject Land'),
+        ('APPROVE_PROJECT', 'Approve Project'),
+        ('REJECT_PROJECT', 'Reject Project'),
+        ('DELETE_LAND', 'Delete Land'),
+        ('DELETE_PROJECT', 'Delete Project'),
+        ('DELETE_USER', 'Delete User'),
+        ('DELETE_LISTING', 'Delete Listing'),
+        ('DELETE_RECOMMENDATION', 'Delete Recommendation'),
+        ('EDIT_LAND', 'Edit Land'),
+        ('EDIT_PROJECT', 'Edit Project'),
+        ('BULK_APPROVE_LANDS', 'Bulk Approve Lands'),
+        ('BULK_REJECT_LANDS', 'Bulk Reject Lands'),
+        ('BULK_APPROVE_PROJECTS', 'Bulk Approve Projects'),
+        ('BULK_REJECT_PROJECTS', 'Bulk Reject Projects'),
+    ]
+
+    admin_user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='admin_actions')
+    action_type = models.CharField(max_length=30, choices=ACTION_TYPES)
+    target_object_type = models.CharField(max_length=50)
+    target_object_id = models.IntegerField()
+    target_object_name = models.CharField(max_length=200)
+    details = models.TextField(blank=True)
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
+    user_agent = models.TextField(blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-timestamp']
+
+    def __str__(self):
+        return f"{self.admin_user.username} - {self.action_type} - {self.target_object_name}"

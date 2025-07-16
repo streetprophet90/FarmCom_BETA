@@ -22,6 +22,7 @@ from django.contrib.auth import views as auth_views
 from django.contrib.auth import logout
 from django.shortcuts import redirect, render
 from . import views
+from accounts.views import custom_login, contact_support
 
 def custom_logout(request):
     from django.contrib.auth import logout
@@ -34,10 +35,14 @@ urlpatterns = [
     path('lands/', include('lands.urls')),
     path('farming/', include('farming.urls')),
     path('marketplace/', include('marketplace.urls')),
-    path('login/', auth_views.LoginView.as_view(template_name='accounts/login.html'), name='login'),
+    path('login/', custom_login, name='login'),
     path('logout/', custom_logout, name='logout'),  # Add logout URL at root level
-    path('contact/', views.contact_support, name='contact_support'),
+    path('contact/', contact_support, name='contact_support'),
+    path('home/', views.logged_in_home, name='logged_in_home'),
     path('', views.home, name='home'),
+    
+    # FarmCom app URLs
+    path('farmcom/', include('farmcom.app_urls')),
 ]
 
 # Serve media files during development

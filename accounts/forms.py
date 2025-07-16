@@ -61,3 +61,35 @@ class RecommendationForm(forms.ModelForm):
             'project': forms.Select(attrs={'class': 'form-select'}),
             'land': forms.Select(attrs={'class': 'form-select'}),
         } 
+
+class ContactSupportForm(forms.Form):
+    SUBJECT_CHOICES = [
+        ('INVESTMENT_INQUIRY', 'Investment Inquiry'),
+        ('TECHNICAL_SUPPORT', 'Technical Support'),
+        ('ACCOUNT_ISSUE', 'Account Issue'),
+        ('MARKETPLACE_QUESTION', 'Marketplace Question'),
+        ('PROJECT_INFORMATION', 'Project Information'),
+        ('GENERAL', 'General Inquiry'),
+    ]
+    
+    subject = forms.ChoiceField(
+        choices=SUBJECT_CHOICES,
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    message = forms.CharField(
+        widget=forms.Textarea(attrs={'rows': 5, 'class': 'form-control', 'placeholder': 'Please describe your inquiry in detail...'}),
+        help_text='Please provide as much detail as possible to help us assist you better.'
+    )
+    preferred_contact = forms.ChoiceField(
+        choices=[
+            ('EMAIL', 'Email'),
+            ('PHONE', 'Phone'),
+        ],
+        widget=forms.RadioSelect(attrs={'class': 'form-check-input'}),
+        initial='EMAIL'
+    )
+    urgent = forms.BooleanField(
+        required=False,
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        help_text='Check if this is an urgent matter'
+    ) 

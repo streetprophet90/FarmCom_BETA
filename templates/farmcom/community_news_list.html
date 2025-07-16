@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block title %}Community News Management{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-newspaper me-2"></i>Community News Management</h1>
+        <a href="{% url 'farmcom:community_news_create' %}" class="btn btn-success">
+            <i class="fas fa-plus me-2"></i>Add News Item
+        </a>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    {% if news_items %}
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Content</th>
+                                <th>Status</th>
+                                <th>Created</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for news in news_items %}
+                            <tr>
+                                <td>
+                                    <strong>{{ news.title }}</strong>
+                                    {% if news.created_by %}
+                                        <br><small class="text-muted">by {{ news.created_by.get_full_name|default:news.created_by.username }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>{{ news.content|truncatewords:20 }}</td>
+                                <td>
+                                    <span class="badge {% if news.is_active %}bg-success{% else %}bg-secondary{% endif %}">
+                                        {% if news.is_active %}Active{% else %}Inactive{% endif %}
+                                    </span>
+                                </td>
+                                <td>{{ news.created_at|date:"M j, Y" }}</td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="{% url 'farmcom:community_news_edit' news.pk %}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button class="btn btn-sm btn-outline-{% if news.is_active %}warning{% else %}success{% endif %}" 
+                                                onclick="toggleActive({{ news.pk }})">
+                                            <i class="fas fa-{% if news.is_active %}eye-slash{% else %}eye{% endif %}"></i>
+                                        </button>
+                                        <a href="{% url 'farmcom:community_news_delete' news.pk %}" class="btn btn-sm btn-outline-danger">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fas fa-newspaper fa-3x text-muted mb-3"></i>
+                <h4>No News Items</h4>
+                <p class="text-muted">No community news items have been created yet.</p>
+                <a href="{% url 'farmcom:community_news_create' %}" class="btn btn-success">
+                    <i class="fas fa-plus me-2"></i>Create First News Item
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+function toggleActive(newsId) {
+    fetch(`/farmcom/community-news/${newsId}/toggle-active/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        }
+    });
+}
+</script>
+{% endblock %} 
