@@ -42,6 +42,8 @@ INSTALLED_APPS = [
     'farming',
     'marketplace',
     'payments',
+    'forums',
+    'user_permissions',
     'farmcom',
 ]
 
@@ -152,8 +154,8 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'amoafo.alive@gmail.com'  # Your Gmail address
-EMAIL_HOST_PASSWORD = 'bzpp rlrl tsqw txul'  # Replace with your Gmail app password
+EMAIL_HOST_USER = 'amoafo.alive@gmail.com'  # Gmail address
+EMAIL_HOST_PASSWORD = 'bzpp rlrl tsqw txul'  # Gmail app password
 DEFAULT_FROM_EMAIL = 'FarmCom <amoafo.alive@gmail.com>'
 
 # For development/testing, use console backend to see emails in terminal:

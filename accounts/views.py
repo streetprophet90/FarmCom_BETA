@@ -847,6 +847,26 @@ def admin_dashboard(request):
     active_news_items = CommunityNews.objects.filter(is_active=True).count()
     inactive_news_items = CommunityNews.objects.filter(is_active=False).count()
     
+    # Add pending topic requests
+    try:
+        from forums.models import TopicRequest
+        pending_requests = TopicRequest.objects.filter(status='PENDING').count()
+        recent_requests = TopicRequest.objects.filter(status='PENDING').order_by('-created_at')[:5]
+    except ImportError:
+        pending_requests = 0
+        recent_requests = []
+    
+    # Add permission statistics
+    try:
+        from user_permissions.models import UserPermission, PermissionCategory
+        user_permissions_count = UserPermission.objects.filter(status='ACTIVE').count()
+        permission_categories_count = PermissionCategory.objects.filter(is_active=True).count()
+        users_with_permissions_count = User.objects.filter(granted_permissions__status='ACTIVE').distinct().count()
+    except ImportError:
+        user_permissions_count = 0
+        permission_categories_count = 8
+        users_with_permissions_count = 0
+    
     return render(request, 'accounts/admin_dashboard.html', {
         'user_counts': user_counts,
         'total_users': total_users,
@@ -871,6 +891,11 @@ def admin_dashboard(request):
         'total_news_items': total_news_items,
         'active_news_items': active_news_items,
         'inactive_news_items': inactive_news_items,
+        'pending_requests': pending_requests,
+        'recent_requests': recent_requests,
+        'user_permissions_count': user_permissions_count,
+        'permission_categories_count': permission_categories_count,
+        'users_with_permissions_count': users_with_permissions_count,
     })
 
 def superuser_required(view_func):

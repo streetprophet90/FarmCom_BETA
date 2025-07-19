@@ -1,0 +1,360 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Manage User Permissions{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="fas fa-user-shield me-2"></i>Manage User Permissions</h2>
+                <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- User List -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-users me-2"></i>Regular Users</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        {% for user in users %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>{{ user.username }}</strong>
+                                <br>
+                                <small class="text-muted">{{ user.get_user_type_display }} • {{ user.email }}</small>
+                            </div>
+                            <button class="btn btn-sm btn-outline-primary" onclick="selectUser({{ user.id }}, '{{ user.username }}')">
+                                <i class="fas fa-plus me-1"></i>Grant Permission
+                            </button>
+                        </div>
+                        {% empty %}
+                        <div class="list-group-item text-muted">No regular users found.</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Permission Form -->
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-plus me-2"></i>Grant Permission</h5>
+                </div>
+                <div class="card-body">
+                    <form id="permissionForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label"><strong>Selected User</strong></label>
+                                    <input type="text" id="selectedUser" class="form-control" readonly>
+                                    <input type="hidden" id="selectedUserId" name="user_id">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label"><strong>Permission Type</strong></label>
+                                    <select name="permission_type" class="form-select" required>
+                                        <option value="">Select Permission Type</option>
+                                        <option value="FORUM_MANAGEMENT">Forum Management</option>
+                                        <option value="USER_MANAGEMENT">User Management</option>
+                                        <option value="LAND_APPROVAL">Land Approval</option>
+                                        <option value="PROJECT_APPROVAL">Project Approval</option>
+                                        <option value="CONTENT_MODERATION">Content Moderation</option>
+                                        <option value="REPORT_MANAGEMENT">Report Management</option>
+                                        <option value="NOTIFICATION_MANAGEMENT">Notification Management</option>
+                                        <option value="ANALYTICS_ACCESS">Analytics Access</option>
+                                        <option value="CUSTOM">Custom Permission</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label"><strong>Permission Name</strong></label>
+                                    <input type="text" name="permission_name" class="form-control" placeholder="e.g., create_topics" required>
+                                    <div class="form-text">Enter a specific permission name</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label"><strong>Expires In (Days)</strong></label>
+                                    <input type="number" name="expires_at" class="form-control" placeholder="30" min="1" max="365">
+                                    <div class="form-text">Leave empty for no expiration</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label"><strong>Description</strong></label>
+                            <textarea name="description" class="form-control" rows="3" placeholder="Describe what this permission allows..."></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label"><strong>Scope (Optional)</strong></label>
+                            <input type="text" name="scope" class="form-control" placeholder="e.g., specific categories, user types">
+                            <div class="form-text">Limit permission to specific scope</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label"><strong>Permissions</strong></label>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="can_create" id="can_create">
+                                        <label class="form-check-label" for="can_create">Can Create</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="can_read" id="can_read" checked>
+                                        <label class="form-check-label" for="can_read">Can Read</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="can_update" id="can_update">
+                                        <label class="form-check-label" for="can_update">Can Update</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="can_delete" id="can_delete">
+                                        <label class="form-check-label" for="can_delete">Can Delete</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="can_approve" id="can_approve">
+                                        <label class="form-check-label" for="can_approve">Can Approve</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="can_reject" id="can_reject">
+                                        <label class="form-check-label" for="can_reject">Can Reject</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <button type="button" class="btn btn-secondary" onclick="resetForm()">
+                                <i class="fas fa-undo me-1"></i>Reset Form
+                            </button>
+                            <button type="submit" class="btn btn-success" id="grantButton" disabled>
+                                <i class="fas fa-plus me-1"></i>Grant Permission
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Permission Templates -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Quick Permission Templates</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="card border-primary">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title">Forum Moderator</h6>
+                                    <p class="card-text small">Can create, edit, and delete forum topics</p>
+                                    <button class="btn btn-sm btn-outline-primary" onclick="loadTemplate('forum_moderator')">
+                                        <i class="fas fa-magic me-1"></i>Load Template
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card border-success">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title">Land Approver</h6>
+                                    <p class="card-text small">Can approve and reject land listings</p>
+                                    <button class="btn btn-sm btn-outline-success" onclick="loadTemplate('land_approver')">
+                                        <i class="fas fa-magic me-1"></i>Load Template
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card border-warning">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title">Content Moderator</h6>
+                                    <p class="card-text small">Can moderate content and handle reports</p>
+                                    <button class="btn btn-sm btn-outline-warning" onclick="loadTemplate('content_moderator')">
+                                        <i class="fas fa-magic me-1"></i>Load Template
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card border-info">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title">Analytics Viewer</h6>
+                                    <p class="card-text small">Can view system analytics and reports</p>
+                                    <button class="btn btn-sm btn-outline-info" onclick="loadTemplate('analytics_viewer')">
+                                        <i class="fas fa-magic me-1"></i>Load Template
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function selectUser(userId, username) {
+    document.getElementById('selectedUserId').value = userId;
+    document.getElementById('selectedUser').value = username;
+    document.getElementById('grantButton').disabled = false;
+}
+
+function resetForm() {
+    document.getElementById('permissionForm').reset();
+    document.getElementById('selectedUserId').value = '';
+    document.getElementById('selectedUser').value = '';
+    document.getElementById('grantButton').disabled = true;
+}
+
+function loadTemplate(template) {
+    const templates = {
+        'forum_moderator': {
+            permission_type: 'FORUM_MANAGEMENT',
+            permission_name: 'forum_moderation',
+            description: 'Can create, edit, and delete forum topics and posts',
+            can_create: true,
+            can_read: true,
+            can_update: true,
+            can_delete: true,
+            can_approve: false,
+            can_reject: false
+        },
+        'land_approver': {
+            permission_type: 'LAND_APPROVAL',
+            permission_name: 'land_approval',
+            description: 'Can approve and reject land listings',
+            can_create: false,
+            can_read: true,
+            can_update: false,
+            can_delete: false,
+            can_approve: true,
+            can_reject: true
+        },
+        'content_moderator': {
+            permission_type: 'CONTENT_MODERATION',
+            permission_name: 'content_moderation',
+            description: 'Can moderate content and handle user reports',
+            can_create: false,
+            can_read: true,
+            can_update: true,
+            can_delete: true,
+            can_approve: true,
+            can_reject: true
+        },
+        'analytics_viewer': {
+            permission_type: 'ANALYTICS_ACCESS',
+            permission_name: 'analytics_access',
+            description: 'Can view system analytics and reports',
+            can_create: false,
+            can_read: true,
+            can_update: false,
+            can_delete: false,
+            can_approve: false,
+            can_reject: false
+        }
+    };
+
+    const selected = templates[template];
+    if (selected) {
+        document.querySelector('select[name="permission_type"]').value = selected.permission_type;
+        document.querySelector('input[name="permission_name"]').value = selected.permission_name;
+        document.querySelector('textarea[name="description"]').value = selected.description;
+        document.getElementById('can_create').checked = selected.can_create;
+        document.getElementById('can_read').checked = selected.can_read;
+        document.getElementById('can_update').checked = selected.can_update;
+        document.getElementById('can_delete').checked = selected.can_delete;
+        document.getElementById('can_approve').checked = selected.can_approve;
+        document.getElementById('can_reject').checked = selected.can_reject;
+    }
+}
+
+document.getElementById('permissionForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const userId = document.getElementById('selectedUserId').value;
+    if (!userId) {
+        alert('Please select a user first');
+        return;
+    }
+
+    const formData = new FormData(this);
+    formData.append('user_id', userId);
+
+    fetch(`/permissions/grant/${userId}/`, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Permission granted successfully!');
+            resetForm();
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while granting permission');
+    });
+});
+</script>
+
+<style>
+.card {
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.card-header {
+    border-radius: 12px 12px 0 0 !important;
+}
+
+.list-group-item {
+    border-left: none;
+    border-right: none;
+}
+
+.form-control, .form-select {
+    border-radius: 8px;
+}
+
+.btn {
+    border-radius: 8px;
+}
+</style>
+{% endblock %} 

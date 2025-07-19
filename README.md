@@ -36,10 +36,11 @@ By fostering collaboration among these stakeholders, FarmCom cultivates crops, b
 ## 🇬🇭 Features
 
 ### 🏠 **User Management**
-- **Multi-role User System**: Landowners, Farmers, Workers, Investors, Students
+- **Multi-role User System**: Landowners, Farmers, Workers, Investors, Students, Admins
 - **User Registration & Authentication**: Secure login/logout system
 - **Profile Management**: User profiles with contact information and expertise
 - **Role-based Access Control**: Different permissions for different user types
+- **Flexible Permission System**: Granular permission delegation for admin tasks
 
 ### 🗺️ **Land Management**
 - **Land Listings**: Browse available agricultural lands
@@ -57,6 +58,28 @@ By fostering collaboration among these stakeholders, FarmCom cultivates crops, b
 - **Crop Listings**: Buy and sell agricultural products
 - **Market Integration**: Connect harvested crops to marketplace
 - **Price Tracking**: Monitor crop prices and market trends
+
+### 💬 **Discussion Forums** *(NEW)*
+- **Topic-based Discussions**: Create and participate in farming-related discussions
+- **Category Management**: Organized forums by farming topics and techniques
+- **Interactive Features**: Like posts, subscribe to topics, mark solutions
+- **Search Functionality**: Find relevant discussions across all topics
+- **Topic Request System**: Regular users can request new discussion topics
+- **Admin Notifications**: Real-time alerts for new topic requests
+
+### 📊 **Dashboard Analytics** *(NEW)*
+- **Activity Analytics**: Visual charts showing daily/weekly/monthly trends
+- **Progress Tracking**: Visual progress bars for ongoing projects
+- **Role-based Dashboards**: Customized dashboards for each user type
+- **Quick Actions**: One-click buttons for common tasks
+- **Real-time Statistics**: Live updates on platform activity
+
+### 🔐 **Permission Management** *(NEW)*
+- **Granular Permissions**: Create, Read, Update, Delete, Approve, Reject controls
+- **Time-limited Access**: Set expiration dates for delegated permissions
+- **Scope Control**: Limit permissions to specific categories or user types
+- **Audit Logging**: Complete trail of all permission usage
+- **Permission Templates**: Quick setup for common roles (Forum Moderator, Land Approver, etc.)
 
 ### 🎨 **User Interface**
 - **Modern Design**: Clean, responsive Bootstrap-based interface
@@ -112,6 +135,8 @@ By fostering collaboration among these stakeholders, FarmCom cultivates crops, b
 7. **Load sample data (optional)**
    ```bash
    python manage.py load_sample_data
+   python manage.py load_forum_data
+   python manage.py load_permission_categories
    ```
 
 8. **Run the development server**
@@ -128,38 +153,90 @@ By fostering collaboration among these stakeholders, FarmCom cultivates crops, b
 ```
 FarmCom_BETA/
 ├── accounts/                 # User management app
-│   ├── models.py            # Custom User model
-│   ├── views.py             # User views and forms
+│   ├── models.py            # Custom User model with roles
+│   ├── views.py             # User views, dashboards, analytics
 │   ├── forms.py             # Registration and profile forms
+│   ├── admin.py             # Admin interface customization
 │   └── management/          # Custom management commands
 │       └── commands/
-│           └── load_sample_data.py
+│           ├── load_sample_data.py
+│           └── load_forum_data.py
 ├── lands/                   # Land management app
-│   ├── models.py            # Land model
-│   ├── views.py             # Land views with filtering
-│   └── forms.py             # Land forms
+│   ├── models.py            # Land model with filtering
+│   ├── views.py             # Land views with advanced filtering
+│   ├── forms.py             # Land forms
+│   └── admin.py             # Land admin interface
 ├── farming/                 # Farming projects app
 │   ├── models.py            # Project and crop models
-│   └── views.py             # Project views
+│   ├── views.py             # Project views and management
+│   ├── forms.py             # Project forms
+│   └── admin.py             # Project admin interface
 ├── marketplace/             # Marketplace app
-│   ├── models.py            # Listing models
-│   └── views.py             # Marketplace views
+│   ├── models.py            # Listing and transaction models
+│   ├── views.py             # Marketplace views
+│   ├── forms.py             # Marketplace forms
+│   └── admin.py             # Marketplace admin interface
+├── forums/                  # Discussion forums app *(NEW)*
+│   ├── models.py            # Category, Topic, Post, TopicRequest models
+│   ├── views.py             # Forum views with CRUD operations
+│   ├── forms.py             # Forum forms
+│   ├── admin.py             # Forum admin with topic request management
+│   ├── urls.py              # Forum URL patterns
+│   └── management/          # Forum management commands
+│       └── commands/
+│           └── load_forum_data.py
+├── user_permissions/        # Permission management app *(NEW)*
+│   ├── models.py            # PermissionCategory, UserPermission, PermissionLog
+│   ├── views.py             # Permission management views
+│   ├── admin.py             # Permission admin interface
+│   ├── utils.py             # Permission utility functions
+│   ├── urls.py              # Permission URL patterns
+│   └── management/          # Permission management commands
+│       └── commands/
+│           └── load_permission_categories.py
 ├── payments/                # Payment processing app
+│   ├── models.py            # Payment models
+│   ├── views.py             # Payment views
+│   └── admin.py             # Payment admin interface
 ├── farmcom/                 # Main project settings
-│   ├── settings.py          # Django settings
+│   ├── settings.py          # Django settings with all apps
 │   ├── urls.py              # Main URL configuration
-│   └── views.py             # Home page view
+│   ├── views.py             # Home page view
+│   └── app_urls.py          # Additional app URLs
 ├── templates/               # HTML templates
-│   ├── base.html            # Base template
+│   ├── base.html            # Base template with navigation
 │   ├── home.html            # Home page
-│   ├── accounts/            # User templates
+│   ├── accounts/            # User templates and dashboards
+│   │   ├── user_dashboard.html
+│   │   ├── farmer_dashboard.html
+│   │   ├── worker_dashboard.html
+│   │   ├── investor_dashboard.html
+│   │   ├── student_dashboard.html
+│   │   └── admin_dashboard.html
 │   ├── lands/               # Land templates
 │   ├── farming/             # Farming templates
-│   └── marketplace/         # Marketplace templates
+│   ├── marketplace/         # Marketplace templates
+│   ├── forums/              # Forum templates *(NEW)*
+│   │   ├── category_list.html
+│   │   ├── topic_list.html
+│   │   ├── topic_detail.html
+│   │   ├── create_topic.html
+│   │   ├── edit_topic.html
+│   │   ├── delete_topic.html
+│   │   ├── request_topic.html
+│   │   └── my_topic_requests.html
+│   └── user_permissions/    # Permission templates *(NEW)*
+│       └── manage_permissions.html
 ├── static/                  # Static files
 │   ├── css/                 # Stylesheets
+│   ├── js/                  # JavaScript files
 │   └── images/              # Images and icons
-└── manage.py                # Django management script
+├── media/                   # User uploaded files
+├── requirements.txt         # Python dependencies
+├── manage.py                # Django management script
+├── README.md                # Project documentation
+├── FARMCOM_RECOMMENDATIONS.md  # Development roadmap
+└── DASHBOARD_ENHANCEMENTS_PROGRESS.md  # Progress tracking
 ```
 
 ## 🌍 Ghanaian Agricultural Focus
@@ -185,6 +262,8 @@ Create a `.env` file in the project root with the following variables:
 SECRET_KEY=your-secret-key-here
 DEBUG=True
 ALLOWED_HOSTS=localhost,127.0.0.1
+EMAIL_HOST_USER=your-email@gmail.com
+EMAIL_HOST_PASSWORD=your-app-password
 ```
 
 ### Database Configuration
@@ -200,10 +279,37 @@ python manage.py test
 ## 📝 API Documentation
 
 The application provides RESTful endpoints for:
-- User management
-- Land listings with filtering
+- User management and authentication
+- Land listings with advanced filtering
 - Farming project management
 - Marketplace operations
+- Discussion forums with CRUD operations
+- Permission management and delegation
+
+## 🚀 Recent Updates (July 19, 2025)
+
+### ✅ **Discussion Forums System**
+- Complete CRUD operations for topics
+- Role-based permissions (superusers vs regular users)
+- Topic request system with admin notifications
+- Interactive features (likes, subscriptions, solutions)
+- Search functionality across topics
+- Admin dashboard integration
+
+### ✅ **Flexible Permission System**
+- 8 permission categories with granular control
+- Time-limited permissions with automatic expiration
+- Scope control for limiting permissions
+- Comprehensive audit logging
+- Admin interface for permission management
+- Permission templates for common roles
+
+### ✅ **Dashboard Enhancements**
+- Activity analytics with visual charts
+- Progress tracking for projects
+- Role-based dashboards for all user types
+- Quick actions for common tasks
+- Real-time statistics and notifications
 
 ## 🤝 Contributing
 
@@ -244,4 +350,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**FarmCom** - Empowering Ghanaian Agriculture Through Technology 🌱🇬🇭 
+**FarmCom** - Empowering Ghanaian Agriculture Through Technology 🌱🇬🇭

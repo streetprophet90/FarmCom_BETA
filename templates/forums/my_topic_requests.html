@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+
+{% block title %}My Topic Requests{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>
+            <i class="fas fa-lightbulb me-2"></i>
+            {% if user.is_superuser %}
+                All Topic Requests
+            {% else %}
+                My Topic Requests
+            {% endif %}
+        </h1>
+        <div class="d-flex gap-2">
+            {% if not user.is_superuser %}
+                <a href="{% url 'forums:request_topic' %}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Request New Topic
+                </a>
+            {% endif %}
+            <a href="{% url 'forums:category_list' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-1"></i>Back to Forums
+            </a>
+        </div>
+    </div>
+
+    {% if requests %}
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    {% if user.is_superuser %}
+                        Topic Requests ({{ requests.count }})
+                    {% else %}
+                        My Requests ({{ requests.count }})
+                    {% endif %}
+                </h5>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Topic Title</th>
+                            <th>Category</th>
+                            {% if user.is_superuser %}
+                                <th>Requested By</th>
+                            {% endif %}
+                            <th>Status</th>
+                            <th>Requested</th>
+                            {% if user.is_superuser %}
+                                <th>Reviewed</th>
+                            {% endif %}
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for request in requests %}
+                        <tr>
+                            <td>
+                                <div class="fw-bold">{{ request.title }}</div>
+                                <small class="text-muted">{{ request.description|truncatewords:10 }}</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary">{{ request.category.name }}</span>
+                            </td>
+                            {% if user.is_superuser %}
+                                <td>{{ request.user.username }}</td>
+                            {% endif %}
+                            <td>
+                                {% if request.status == 'PENDING' %}
+                                    <span class="badge bg-warning text-dark">Pending</span>
+                                {% elif request.status == 'APPROVED' %}
+                                    <span class="badge bg-success">Approved</span>
+                                {% elif request.status == 'REJECTED' %}
+                                    <span class="badge bg-danger">Rejected</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <small class="text-muted">{{ request.created_at|date:"M d, Y" }}</small>
+                            </td>
+                            {% if user.is_superuser %}
+                                <td>
+                                    {% if request.reviewed_at %}
+                                        <small class="text-muted">{{ request.reviewed_at|date:"M d, Y" }}</small>
+                                        <br>
+                                        <small class="text-muted">by {{ request.reviewed_by.username }}</small>
+                                    {% else %}
+                                        <small class="text-muted">Not reviewed</small>
+                                    {% endif %}
+                                </td>
+                            {% endif %}
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#requestModal{{ request.id }}">
+                                    <i class="fas fa-eye"></i> View
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Request Detail Modals -->
+        {% for request in requests %}
+        <div class="modal fade" id="requestModal{{ request.id }}" tabindex="-1" aria-labelledby="requestModalLabel{{ request.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="requestModalLabel{{ request.id }}">
+                            Topic Request: {{ request.title }}
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>Category:</strong> {{ request.category.name }}
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Status:</strong>
+                                {% if request.status == 'PENDING' %}
+                                    <span class="badge bg-warning text-dark">Pending</span>
+                                {% elif request.status == 'APPROVED' %}
+                                    <span class="badge bg-success">Approved</span>
+                                {% elif request.status == 'REJECTED' %}
+                                    <span class="badge bg-danger">Rejected</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="mb-3">
+                            <strong>Description:</strong>
+                            <p>{{ request.description }}</p>
+                        </div>
+                        <div class="mb-3">
+                            <strong>Reason for Request:</strong>
+                            <p>{{ request.reason }}</p>
+                        </div>
+                        {% if request.admin_notes %}
+                            <div class="mb-3">
+                                <strong>Admin Notes:</strong>
+                                <p>{{ request.admin_notes }}</p>
+                            </div>
+                        {% endif %}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>Requested:</strong> {{ request.created_at|date:"M d, Y at g:i A" }}
+                            </div>
+                            {% if request.reviewed_at %}
+                                <div class="col-md-6">
+                                    <strong>Reviewed:</strong> {{ request.reviewed_at|date:"M d, Y at g:i A" }}
+                                    <br>
+                                    <small class="text-muted">by {{ request.reviewed_by.username }}</small>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-lightbulb fa-3x text-muted mb-3"></i>
+                <h4>No topic requests found</h4>
+                {% if user.is_superuser %}
+                    <p class="text-muted">No topic requests have been submitted yet.</p>
+                {% else %}
+                    <p class="text-muted">You haven't submitted any topic requests yet.</p>
+                    <a href="{% url 'forums:request_topic' %}" class="btn btn-primary">
+                        <i class="fas fa-plus me-1"></i>Request Your First Topic
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %} 

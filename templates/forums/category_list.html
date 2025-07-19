@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+
+{% block title %}Forums - Categories{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1><i class="fas fa-comments me-2"></i>Discussion Forums</h1>
+        <div class="d-flex gap-2">
+            {% if user.is_authenticated %}
+                <a href="{% url 'forums:my_topic_requests' %}" class="btn btn-outline-info">
+                    <i class="fas fa-lightbulb me-1"></i>My Requests
+                </a>
+            {% endif %}
+            {% if user.is_authenticated and user.is_superuser %}
+                <a href="{% url 'forums:create_topic' %}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>New Topic
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Forum Policy Notice -->
+    {% if user.is_authenticated and not user.is_superuser %}
+    <div class="alert alert-info mb-4">
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>Forum Policy:</strong> Only administrators can create new topics. All users can reply to existing topics and participate in discussions.
+            </div>
+            <a href="{% url 'forums:request_topic' %}" class="btn btn-outline-primary btn-sm">
+                <i class="fas fa-lightbulb me-1"></i>Request New Topic
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Search Bar -->
+    <div class="row mb-4">
+        <div class="col-md-8 mx-auto">
+            <form method="GET" action="{% url 'forums:search_topics' %}" class="d-flex">
+                <input type="text" name="q" class="form-control me-2" placeholder="Search topics..." value="{{ search_query }}">
+                <button type="submit" class="btn btn-outline-primary">
+                    <i class="fas fa-search"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Categories -->
+    <div class="row">
+        {% for category in categories %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-folder me-2"></i>{{ category.name }}
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text text-muted">{{ category.description }}</p>
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="text-primary fw-bold">{{ category.get_topic_count }}</div>
+                            <small class="text-muted">Topics</small>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-success fw-bold">{{ category.get_post_count }}</div>
+                            <small class="text-muted">Posts</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <a href="{% url 'forums:category_topics' category.slug %}" class="btn btn-outline-primary btn-sm w-100">
+                        <i class="fas fa-eye me-1"></i>View Topics
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="alert alert-info text-center">
+                <i class="fas fa-info-circle me-2"></i>No forum categories available yet.
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Recent Topics -->
+    <div class="mt-5">
+        <h3><i class="fas fa-clock me-2"></i>Recent Topics</h3>
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Topic</th>
+                        <th>Category</th>
+                        <th>Author</th>
+                        <th>Posts</th>
+                        <th>Views</th>
+                        <th>Last Post</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for topic in recent_topics %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'forums:topic_detail' topic.id %}" class="text-decoration-none">
+                                {% if topic.is_pinned %}
+                                    <i class="fas fa-thumbtack text-warning me-1"></i>
+                                {% endif %}
+                                {{ topic.title }}
+                            </a>
+                        </td>
+                        <td>
+                            <span class="badge bg-secondary">{{ topic.category.name }}</span>
+                        </td>
+                        <td>{{ topic.author.username }}</td>
+                        <td>{{ topic.get_post_count }}</td>
+                        <td>{{ topic.views }}</td>
+                        <td>
+                            {% if topic.get_last_post %}
+                                <small class="text-muted">{{ topic.get_last_post.created_at|timesince }} ago</small>
+                            {% else %}
+                                <small class="text-muted">No posts</small>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center text-muted">No topics yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %} 

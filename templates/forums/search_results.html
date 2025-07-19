@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+
+{% block title %}Search Results{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>
+            <i class="fas fa-search me-2"></i>Search Results
+            {% if search_query %}
+                for "{{ search_query }}"
+            {% endif %}
+        </h1>
+        <a href="{% url 'forums:category_list' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Back to Forums
+        </a>
+    </div>
+
+    <!-- Search Form -->
+    <div class="row mb-4">
+        <div class="col-md-8 mx-auto">
+            <form method="GET" action="{% url 'forums:search_topics' %}" class="d-flex">
+                <input type="text" name="q" class="form-control me-2" placeholder="Search topics..." value="{{ search_query }}">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Results -->
+    {% if search_query %}
+        {% if topics %}
+            <div class="card">
+                <div class="card-header">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <h5 class="mb-0">Found {{ topics.paginator.count }} result{{ topics.paginator.count|pluralize }}</h5>
+                        </div>
+                        <div class="col-md-6 text-end">
+                            <small class="text-muted">Showing {{ topics.start_index }}-{{ topics.end_index }} of {{ topics.paginator.count }}</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Topic</th>
+                                <th>Category</th>
+                                <th>Author</th>
+                                <th>Posts</th>
+                                <th>Views</th>
+                                <th>Last Post</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for topic in topics %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-start">
+                                        <div class="me-2">
+                                            {% if topic.is_pinned %}
+                                                <i class="fas fa-thumbtack text-warning" title="Pinned"></i>
+                                            {% elif topic.is_locked %}
+                                                <i class="fas fa-lock text-danger" title="Locked"></i>
+                                            {% else %}
+                                                <i class="fas fa-comment text-muted"></i>
+                                            {% endif %}
+                                        </div>
+                                        <div>
+                                            <a href="{% url 'forums:topic_detail' topic.id %}" class="text-decoration-none fw-bold">
+                                                {{ topic.title }}
+                                            </a>
+                                            <br>
+                                            <small class="text-muted">
+                                                {% if topic.is_pinned %}
+                                                    <span class="badge bg-warning text-dark me-1">Pinned</span>
+                                                {% endif %}
+                                                {% if topic.is_locked %}
+                                                    <span class="badge bg-danger me-1">Locked</span>
+                                                {% endif %}
+                                                {{ topic.created_at|date:"M d, Y" }}
+                                            </small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <a href="{% url 'forums:category_topics' topic.category.slug %}" class="text-decoration-none">
+                                        <span class="badge bg-secondary">{{ topic.category.name }}</span>
+                                    </a>
+                                </td>
+                                <td>{{ topic.author.username }}</td>
+                                <td>
+                                    <span class="badge bg-primary">{{ topic.get_post_count }}</span>
+                                </td>
+                                <td>
+                                    <small class="text-muted">{{ topic.views }}</small>
+                                </td>
+                                <td>
+                                    {% if topic.get_last_post %}
+                                        <div>
+                                            <small class="text-muted">{{ topic.get_last_post.created_at|timesince }} ago</small>
+                                            <br>
+                                            <small class="text-muted">by {{ topic.get_last_post.author.username }}</small>
+                                        </div>
+                                    {% else %}
+                                        <small class="text-muted">No posts</small>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            {% if topics.has_other_pages %}
+            <nav aria-label="Search results pagination" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if topics.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?q={{ search_query }}&page=1">
+                                <i class="fas fa-angle-double-left"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?q={{ search_query }}&page={{ topics.previous_page_number }}">
+                                <i class="fas fa-angle-left"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+
+                    {% for num in topics.paginator.page_range %}
+                        {% if topics.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > topics.number|add:'-3' and num < topics.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?q={{ search_query }}&page={{ num }}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if topics.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?q={{ search_query }}&page={{ topics.next_page_number }}">
+                                <i class="fas fa-angle-right"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?q={{ search_query }}&page={{ topics.paginator.num_pages }}">
+                                <i class="fas fa-angle-double-right"></i>
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        {% else %}
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                    <h4>No results found</h4>
+                    <p class="text-muted">No topics match your search for "{{ search_query }}".</p>
+                    <div class="mt-3">
+                        <p class="text-muted">Try:</p>
+                        <ul class="list-unstyled text-muted">
+                            <li>• Using different keywords</li>
+                            <li>• Checking your spelling</li>
+                            <li>• Using more general terms</li>
+                            <li>• Browsing the <a href="{% url 'forums:category_list' %}">forum categories</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                <h4>Enter a search term</h4>
+                <p class="text-muted">Use the search box above to find topics in the forums.</p>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %} 

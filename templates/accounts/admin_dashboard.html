@@ -6,14 +6,22 @@
             <div>
                 <i class="fas fa-user-shield me-2"></i>Welcome, {{ user.first_name }}! This is the <strong>Admin Dashboard</strong>.
             </div>
-            <div class="dropdown">
-                <button class="btn btn-outline-primary dropdown-toggle" type="button" id="notificationDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="fas fa-bell me-1"></i>
-                    Notifications
-                    {% if unread_notifications > 0 %}
-                        <span class="badge bg-danger ms-1">{{ unread_notifications }}</span>
-                    {% endif %}
-                </button>
+            <div class="d-flex gap-2">
+                {% if pending_requests > 0 %}
+                <a href="/admin/forums/topicrequest/" class="btn btn-outline-warning" target="_blank">
+                    <i class="fas fa-lightbulb me-1"></i>
+                    Topic Requests
+                    <span class="badge bg-warning text-dark ms-1">{{ pending_requests }}</span>
+                </a>
+                {% endif %}
+                <div class="dropdown">
+                    <button class="btn btn-outline-primary dropdown-toggle" type="button" id="notificationDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-bell me-1"></i>
+                        Notifications
+                        {% if unread_notifications > 0 %}
+                            <span class="badge bg-danger ms-1">{{ unread_notifications }}</span>
+                        {% endif %}
+                    </button>
                 <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationDropdown" style="width: 350px;">
                     <li><h6 class="dropdown-header">Recent Notifications</h6></li>
                     {% if recent_notifications %}
@@ -121,6 +129,18 @@
                 </div>
             </div>
         </div>
+        {% if pending_requests > 0 %}
+        <div class="col-md-4 mb-3">
+            <div class="card h-100 border-warning">
+                <div class="card-body">
+                    <i class="fas fa-lightbulb fa-lg text-warning mb-2"></i>
+                    <h5 class="card-title">Topic Requests</h5>
+                    <h3 class="text-warning">{{ pending_requests }}</h3>
+                    <small class="text-muted">Pending Review</small>
+                </div>
+            </div>
+        </div>
+        {% endif %}
     </div>
     <h3 class="mt-5 mb-3"><i class="fas fa-cogs me-2"></i>Management Sections</h3>
 
@@ -429,6 +449,46 @@
         </div>
     </div>
 
+    <!-- User Permissions Management -->
+    <div class="card mb-4">
+        <div class="card-header bg-info text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <div><i class="fas fa-user-shield me-2"></i>User Permissions Management</div>
+                <div class="d-flex gap-2">
+                    <a href="/admin/user_permissions/userpermission/" class="btn btn-sm btn-outline-light" target="_blank">
+                        <i class="fas fa-cog me-1"></i>Manage Permissions
+                    </a>
+                    <a href="/permissions/manage/" class="btn btn-sm btn-outline-light">
+                        <i class="fas fa-users me-1"></i>Grant Permissions
+                    </a>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6><i class="fas fa-info-circle me-2"></i>Quick Actions</h6>
+                    <div class="d-grid gap-2">
+                        <a href="/admin/user_permissions/userpermission/add/" class="btn btn-outline-success btn-sm" target="_blank">
+                            <i class="fas fa-plus me-2"></i>Grant New Permission
+                        </a>
+                        <a href="/permissions/stats/" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-chart-bar me-2"></i>View Usage Statistics
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h6><i class="fas fa-chart-bar me-2"></i>Permission Statistics</h6>
+                    <ul class="list-unstyled">
+                        <li><strong>Active Permissions:</strong> <span class="badge bg-success">{{ user_permissions_count|default:0 }}</span></li>
+                        <li><strong>Permission Categories:</strong> <span class="badge bg-primary">{{ permission_categories_count|default:8 }}</span></li>
+                        <li><strong>Users with Permissions:</strong> <span class="badge bg-info">{{ users_with_permissions_count|default:0 }}</span></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Community News Management -->
     <div class="card mb-4">
         <div class="card-header bg-dark text-white">
@@ -463,6 +523,55 @@
             </div>
         </div>
     </div>
+
+    <!-- Topic Requests Management -->
+    {% if pending_requests > 0 %}
+    <div class="card mb-4">
+        <div class="card-header bg-warning text-dark">
+            <div class="d-flex justify-content-between align-items-center">
+                <div><i class="fas fa-lightbulb me-2"></i>Topic Requests ({{ pending_requests }} Pending)</div>
+                <a href="/admin/forums/topicrequest/" class="btn btn-sm btn-outline-dark" target="_blank">
+                    <i class="fas fa-cog me-1"></i>Review All Requests
+                </a>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-striped mb-0">
+                    <thead>
+                        <tr>
+                            <th>Topic Title</th>
+                            <th>Category</th>
+                            <th>Requested By</th>
+                            <th>Description</th>
+                            <th>Requested</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for request in recent_requests %}
+                        <tr>
+                            <td><strong>{{ request.title }}</strong></td>
+                            <td><span class="badge bg-secondary">{{ request.category.name }}</span></td>
+                            <td>{{ request.user.get_full_name|default:request.user.username }}</td>
+                            <td>{{ request.description|truncatewords:8 }}</td>
+                            <td>{{ request.created_at|date:"M d, Y" }}</td>
+                            <td>
+                                <a href="/admin/forums/topicrequest/{{ request.id }}/change/" class="btn btn-sm btn-outline-primary" target="_blank">
+                                    <i class="fas fa-eye"></i> Review
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="6" class="text-muted">No pending topic requests.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     <h3 class="mt-5 mb-3"><i class="fas fa-history me-2"></i>Recent Activity</h3>
     <div class="row">
         <div class="col-md-6 mb-4">
