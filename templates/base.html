@@ -72,8 +72,12 @@
                                     {% endfor %}
                                     <li><hr class="dropdown-divider"></li>
                                     <li><a class="dropdown-item text-center" href="#" onclick="markAllNotificationsRead()">Mark All as Read</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item text-center" href="{% url 'notifications_page' %}">View All Notifications</a></li>
                                 {% else %}
                                     <li><span class="dropdown-item-text text-muted">No new notifications</span></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item text-center" href="{% url 'notifications_page' %}">View All Notifications</a></li>
                                 {% endif %}
                             </ul>
                         </li>

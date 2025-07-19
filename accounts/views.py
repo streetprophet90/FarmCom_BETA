@@ -21,6 +21,40 @@ from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import authenticate, login as auth_login
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.conf import settings
+
+def send_email_notification(user, notification_type, title, message):
+    """Send email notification to superusers"""
+    if user.is_superuser:
+        try:
+            # Create email subject and content
+            subject = f'FarmCom Notification: {title}'
+            
+            # Create HTML email template
+            html_message = render_to_string('accounts/email_notification.html', {
+                'user': user,
+                'notification_type': notification_type,
+                'title': title,
+                'message': message,
+                'timestamp': timezone.now(),
+            })
+            
+            # Send email
+            send_mail(
+                subject=subject,
+                message=message,  # Plain text version
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[user.email],
+                html_message=html_message,
+                fail_silently=False,
+            )
+            return True
+        except Exception as e:
+            print(f"Failed to send email notification: {e}")
+            return False
+    return False
 
 def get_activity_analytics(user, days=30):
     """Generate activity analytics data for charts"""
@@ -844,8 +878,9 @@ def superuser_required(view_func):
     return decorated_view_func
 
 def create_notification(user, notification_type, title, message, related_object_id=None, related_object_type=None):
-    """Helper function to create notifications"""
-    Notification.objects.create(
+    """Helper function to create notifications and send emails to superusers"""
+    # Create the notification in database
+    notification = Notification.objects.create(
         user=user,
         notification_type=notification_type,
         title=title,
@@ -853,6 +888,12 @@ def create_notification(user, notification_type, title, message, related_object_
         related_object_id=related_object_id,
         related_object_type=related_object_type
     )
+    
+    # Send email notification to superusers
+    if user.is_superuser:
+        send_email_notification(user, notification_type, title, message)
+    
+    return notification
 
 def get_notification_data(user):
     """Helper function to get notification data for any user"""
@@ -1536,5 +1577,25 @@ def student_home(request):
         'completed_projects': completed_projects,
         'news': news,
         'testimonials': testimonials,
+        **get_notification_data(user),
+    })
+
+@login_required
+def notifications_page(request):
+    """Dedicated page for viewing all notifications"""
+    user = request.user
+    notifications = Notification.objects.filter(user=user).order_by('-created_at')
+    
+    # Pagination
+    paginator = Paginator(notifications, 20)
+    page = request.GET.get('page')
+    notifications_paginated = paginator.get_page(page)
+    
+    # Get unread count for the badge
+    unread_count = Notification.objects.filter(user=user, is_read=False).count()
+    
+    return render(request, 'accounts/notifications.html', {
+        'notifications': notifications_paginated,
+        'unread_count': unread_count,
         **get_notification_data(user),
     })

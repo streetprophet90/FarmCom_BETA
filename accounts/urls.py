@@ -16,6 +16,7 @@ urlpatterns = [
     path('contact-support/', views.contact_support, name='contact_support'),
     path('custom-login/', views.custom_login, name='custom_login'),
     path('logout/', LogoutView.as_view(next_page='/'), name='logout'),
+    path('notifications/', views.notifications_page, name='notifications_page'),
     path('approve-land/<int:land_id>/', views.approve_land, name='approve_land'),
     path('reject-land/<int:land_id>/', views.reject_land, name='reject_land'),
     path('approve-project/<int:project_id>/', views.approve_project, name='approve_project'),

@@ -3,9 +3,12 @@ from django.contrib.auth.decorators import login_required
 from django.views.generic import ListView, CreateView, UpdateView
 from django.db.models import Q
 from django.contrib.auth.mixins import UserPassesTestMixin
+from django.contrib import messages
+from django.urls import reverse
 
 from .models import Land
 from .forms import LandForm
+from accounts.views import create_notification
 
 
 class LandListView(ListView):
@@ -84,7 +87,37 @@ class AddLandView(UserPassesTestMixin, CreateView):
         return self.request.user.is_superuser or getattr(self.request.user, 'user_type', None) == 'LANDOWNER'
 
     def handle_no_permission(self):
-        from django.contrib import messages
         messages.error(self.request, 'You do not have permission to add land.')
         from django.shortcuts import redirect
         return redirect('land_list')
+    
+    def form_valid(self, form):
+        land = form.save(commit=False)
+        land.owner = self.request.user
+        land.save()
+        
+        # Create notification for all superusers about new land
+        from accounts.models import User
+        superusers = User.objects.filter(is_superuser=True)
+        for admin in superusers:
+            create_notification(
+                user=admin,
+                notification_type='LAND_PENDING',
+                title=f'New Land: {land.title}',
+                message=f'Landowner {self.request.user.get_full_name() or self.request.user.username} added new land: {land.title}',
+                related_object_id=land.id,
+                related_object_type='Land'
+            )
+        
+        # Create notification for land owner
+        create_notification(
+            user=self.request.user,
+            notification_type='LAND_PENDING',
+            title=f'Land Added: {land.title}',
+            message=f'Your land "{land.title}" has been added and is pending approval.',
+            related_object_id=land.id,
+            related_object_type='Land'
+        )
+        
+        messages.success(self.request, 'Land added successfully! It is now pending approval.')
+        return super().form_valid(form)

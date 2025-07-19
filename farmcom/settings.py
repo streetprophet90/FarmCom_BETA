@@ -145,3 +145,16 @@ AUTH_USER_MODEL = 'accounts.User'
 LOGIN_URL = '/login/'
 LOGIN_REDIRECT_URL = 'home'
 LOGOUT_REDIRECT_URL = 'home'
+
+# Email Configuration for Notifications
+# For production with Gmail SMTP:
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'amoafo.alive@gmail.com'  # Your Gmail address
+EMAIL_HOST_PASSWORD = 'bzpp rlrl tsqw txul'  # Replace with your Gmail app password
+DEFAULT_FROM_EMAIL = 'FarmCom <amoafo.alive@gmail.com>'
+
+# For development/testing, use console backend to see emails in terminal:
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
