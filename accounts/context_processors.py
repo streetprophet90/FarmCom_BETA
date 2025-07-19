@@ -1,4 +1,5 @@
 from .models import Notification
+from .utils import get_user_dashboard_url, get_user_home_url
 
 def notification_data(request):
     if request.user.is_authenticated:
@@ -11,4 +12,18 @@ def notification_data(request):
     return {
         'unread_notifications': 0,
         'recent_notifications': [],
+    }
+
+def dashboard_url(request):
+    """
+    Add user dashboard URL to template context.
+    """
+    if request.user.is_authenticated:
+        return {
+            'user_dashboard_url': get_user_dashboard_url(request.user),
+            'user_home_url': get_user_home_url(request.user)
+        }
+    return {
+        'user_dashboard_url': 'home',
+        'user_home_url': 'home'
     } 

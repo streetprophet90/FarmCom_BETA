@@ -9,25 +9,11 @@
             <div class="alert alert-success">
                 <h3 class="mb-3"><i class="fas fa-check-circle me-2"></i>Thank You!</h3>
                 <p>Your testimonial has been submitted and is pending approval by our team. Once approved, it will appear on the homepage.</p>
-                {% if user.is_authenticated %}
-                    {% if user.is_superuser %}
-                        <a href="{% url 'admin_dashboard' %}" class="btn btn-primary mt-3">Back to Home</a>
-                    {% elif user.user_type == 'LANDOWNER' %}
-                        <a href="{% url 'user_dashboard' %}" class="btn btn-primary mt-3">Back to Home</a>
-                    {% elif user.user_type == 'FARMER' %}
-                        <a href="{% url 'farmer_dashboard' %}" class="btn btn-primary mt-3">Back to Home</a>
-                    {% elif user.user_type == 'WORKER' %}
-                        <a href="{% url 'worker_dashboard' %}" class="btn btn-primary mt-3">Back to Home</a>
-                    {% elif user.user_type == 'INVESTOR' %}
-                        <a href="{% url 'investor_home' %}" class="btn btn-primary mt-3">Back to Home</a>
-                    {% elif user.user_type == 'STUDENT' %}
-                        <a href="{% url 'student_dashboard' %}" class="btn btn-primary mt-3">Back to Home</a>
-                    {% else %}
-                        <a href="/" class="btn btn-primary mt-3">Back to Home</a>
-                    {% endif %}
-                {% else %}
-                    <a href="/" class="btn btn-primary mt-3">Back to Home</a>
-                {% endif %}
+                        {% if user.is_authenticated %}
+            <a href="{% url user_home_url %}" class="btn btn-primary mt-3">Back to Home</a>
+        {% else %}
+            <a href="/" class="btn btn-primary mt-3">Back to Home</a>
+        {% endif %}
             </div>
         </div>
     </div>

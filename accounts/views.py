@@ -24,6 +24,7 @@ from django.contrib.auth import authenticate, login as auth_login
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.conf import settings
+from .utils import get_user_dashboard_url
 
 def send_email_notification(user, notification_type, title, message):
     """Send email notification to superusers"""
@@ -113,20 +114,8 @@ def get_activity_analytics(user, days=30):
     }
 
 def get_dashboard_url(user):
-    if user.is_superuser:
-        return 'admin_dashboard'
-    if user.user_type == 'LANDOWNER':
-        return 'landowner_home'
-    elif user.user_type == 'FARMER':
-        return 'farmer_home'
-    elif user.user_type == 'WORKER':
-        return 'worker_home'
-    elif user.user_type == 'INVESTOR':
-        return 'investor_home'
-    elif user.user_type == 'STUDENT':
-        return 'student_home'
-    else:
-        return 'user_dashboard'
+    """Get the appropriate dashboard URL based on user role."""
+    return get_user_dashboard_url(user)
 
 @login_required
 def profile(request):
@@ -806,6 +795,55 @@ def student_dashboard(request):
         'recommendations': recommendations,
         **get_notification_data(user),
     })
+
+@login_required
+def superuser_home(request):
+    """Custom home page for superusers with platform overview"""
+    if not request.user.is_superuser:
+        return redirect('home')
+    
+    # Get platform statistics
+    total_users = User.objects.count()
+    total_lands = Land.objects.count()
+    total_projects = FarmingProject.objects.count()
+    total_listings = CropListing.objects.count()
+    
+    # Get user counts by type
+    user_counts = User.objects.values('user_type').annotate(count=Count('id')).order_by('-count')
+    
+    # Get pending items
+    pending_lands = Land.objects.filter(approval_status='PENDING')
+    pending_projects = FarmingProject.objects.filter(approval_status='PENDING')
+    
+    # Get recent activities (you can customize this based on your needs)
+    recent_activities = []
+    
+    # Get community news
+    from farmcom.models import CommunityNews
+    news = CommunityNews.objects.filter(is_active=True).order_by('-created_at')[:6]
+    
+    # Get topic requests count
+    from forums.models import TopicRequest
+    pending_requests = TopicRequest.objects.filter(status='PENDING').count()
+    
+    context = {
+        'total_users': total_users,
+        'total_lands': total_lands,
+        'total_projects': total_projects,
+        'total_listings': total_listings,
+        'user_counts': user_counts,
+        'pending_lands': pending_lands,
+        'pending_projects': pending_projects,
+        'recent_activities': recent_activities,
+        'news': news,
+        'pending_requests': pending_requests,
+        'approved_lands': Land.objects.filter(approval_status='APPROVED').count(),
+        'active_projects': FarmingProject.objects.filter(status='ACTIVE').count(),
+        'active_listings': CropListing.objects.count(),
+        'sold_listings': 0,  # CropListing doesn't have is_sold field
+    }
+    
+    return render(request, 'accounts/superuser_home.html', context)
 
 @login_required
 def admin_dashboard(request):

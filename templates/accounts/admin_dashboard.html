@@ -48,21 +48,7 @@
     <h2 class="mb-4">
         <i class="fas fa-tachometer-alt me-2"></i>Platform Overview
         {% if user.is_authenticated %}
-            {% if user.is_superuser %}
-                <a href="{% url 'admin_dashboard' %}" class="btn btn-light"><i class="fas fa-home me-1"></i>Back to Home</a>
-            {% elif user.user_type == 'LANDOWNER' %}
-                <a href="{% url 'user_dashboard' %}" class="btn btn-light"><i class="fas fa-home me-1"></i>Back to Home</a>
-            {% elif user.user_type == 'FARMER' %}
-                <a href="{% url 'farmer_dashboard' %}" class="btn btn-light"><i class="fas fa-home me-1"></i>Back to Home</a>
-            {% elif user.user_type == 'WORKER' %}
-                <a href="{% url 'worker_dashboard' %}" class="btn btn-light"><i class="fas fa-home me-1"></i>Back to Home</a>
-            {% elif user.user_type == 'INVESTOR' %}
-                <a href="{% url 'investor_home' %}" class="btn btn-light"><i class="fas fa-home me-1"></i>Back to Home</a>
-            {% elif user.user_type == 'STUDENT' %}
-                <a href="{% url 'student_dashboard' %}" class="btn btn-light"><i class="fas fa-home me-1"></i>Back to Home</a>
-            {% else %}
-                <a href="/" class="btn btn-light"><i class="fas fa-home me-1"></i>Back to Home</a>
-            {% endif %}
+            <a href="{% url user_home_url %}" class="btn btn-light"><i class="fas fa-home me-1"></i>Back to Home</a>
         {% else %}
             <a href="/" class="btn btn-light"><i class="fas fa-home me-1"></i>Back to Home</a>
         {% endif %}

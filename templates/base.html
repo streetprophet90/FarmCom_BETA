@@ -14,21 +14,7 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-success">
         <div class="container">
             {% if user.is_authenticated %}
-                {% if user.is_superuser %}
-                    <a class="navbar-brand" href="{% url 'admin_dashboard' %}"><i class="fas fa-seedling me-2"></i>FarmCom</a>
-                {% elif user.user_type == 'LANDOWNER' %}
-                    <a class="navbar-brand" href="{% url 'landowner_home' %}"><i class="fas fa-seedling me-2"></i>FarmCom</a>
-                {% elif user.user_type == 'FARMER' %}
-                    <a class="navbar-brand" href="{% url 'farmer_home' %}"><i class="fas fa-seedling me-2"></i>FarmCom</a>
-                {% elif user.user_type == 'WORKER' %}
-                    <a class="navbar-brand" href="{% url 'worker_home' %}"><i class="fas fa-seedling me-2"></i>FarmCom</a>
-                {% elif user.user_type == 'INVESTOR' %}
-                    <a class="navbar-brand" href="{% url 'investor_home' %}"><i class="fas fa-seedling me-2"></i>FarmCom</a>
-                {% elif user.user_type == 'STUDENT' %}
-                    <a class="navbar-brand" href="{% url 'student_home' %}"><i class="fas fa-seedling me-2"></i>FarmCom</a>
-                {% else %}
-                    <a class="navbar-brand" href="/"><i class="fas fa-seedling me-2"></i>FarmCom</a>
-                {% endif %}
+                <a class="navbar-brand" href="{% url user_home_url %}"><i class="fas fa-seedling me-2"></i>FarmCom</a>
             {% else %}
                 <a class="navbar-brand" href="/"><i class="fas fa-seedling me-2"></i>FarmCom</a>
             {% endif %}
