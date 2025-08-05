@@ -15,10 +15,18 @@ from lands.models import Land
 from farming.models import FarmingProject
 from marketplace.models import CropListing
 from accounts.models import Recommendation, ActivityLog, Notification, AdminAuditLog
+from accounts.notification_utils import (
+    mark_notification_read_ajax, 
+    mark_all_notifications_read_ajax, 
+    get_notifications_ajax,
+    create_enhanced_notification,
+    get_notification_stats
+)
 from django.core.paginator import Paginator
 from django.urls import reverse
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
+from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import authenticate, login as auth_login
 from django.core.mail import send_mail
@@ -1662,3 +1670,58 @@ def notifications_page(request):
         'unread_count': unread_count,
         **get_notification_data(user),
     })
+
+@login_required
+def notification_settings(request):
+    """Notification settings page"""
+    return render(request, 'accounts/notification_settings.html', {
+        **get_notification_data(request.user),
+    })
+
+@login_required
+@require_POST
+def update_notification_settings(request):
+    """Update user notification settings"""
+    user = request.user
+    
+    # Update settings based on form data
+    user.email_notifications = 'email_notifications' in request.POST
+    user.push_notifications = 'push_notifications' in request.POST
+    user.notification_sound = 'notification_sound' in request.POST
+    user.save()
+    
+    return JsonResponse({'status': 'success'})
+
+@login_required
+@require_POST
+def update_notification_frequency(request):
+    """Update notification frequency"""
+    import json
+    data = json.loads(request.body)
+    frequency = data.get('frequency')
+    
+    if frequency in ['IMMEDIATE', 'HOURLY', 'DAILY', 'WEEKLY']:
+        user = request.user
+        user.notification_frequency = frequency
+        user.save()
+        return JsonResponse({'status': 'success'})
+    
+    return JsonResponse({'status': 'error', 'message': 'Invalid frequency'})
+
+@login_required
+@require_POST
+def test_notification(request):
+    """Send a test notification to the user"""
+    user = request.user
+    
+    # Create a test notification
+    create_enhanced_notification(
+        user=user,
+        notification_type='SYSTEM_MAINTENANCE',
+        title='Test Notification',
+        message='This is a test notification to verify your notification settings are working correctly.',
+        related_object_id=None,
+        related_object_type=None
+    )
+    
+    return JsonResponse({'status': 'success'})

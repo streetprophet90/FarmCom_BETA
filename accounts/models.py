@@ -17,6 +17,22 @@ class User(AbstractUser):
     bio = models.TextField(blank=True)
     skills = models.CharField(max_length=200, blank=True)
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
+    
+    # Notification preferences
+    email_notifications = models.BooleanField(default=True, help_text='Receive email notifications')
+    push_notifications = models.BooleanField(default=True, help_text='Receive browser push notifications')
+    notification_sound = models.BooleanField(default=True, help_text='Play notification sounds')
+    notification_frequency = models.CharField(
+        max_length=20, 
+        choices=[
+            ('IMMEDIATE', 'Immediate'),
+            ('HOURLY', 'Hourly Digest'),
+            ('DAILY', 'Daily Digest'),
+            ('WEEKLY', 'Weekly Digest'),
+        ],
+        default='IMMEDIATE',
+        help_text='How often to receive notifications'
+    )
 
     # Add these to resolve the clashes
     groups = models.ManyToManyField(
@@ -105,10 +121,31 @@ class Notification(models.Model):
         ('MARKETPLACE_ORDER', 'Marketplace Order'),
         ('PAYMENT_RECEIVED', 'Payment Received'),
         ('SYSTEM_MAINTENANCE', 'System Maintenance'),
+        # Forum-related notifications
+        ('TOPIC_REQUEST', 'Topic Request Submitted'),
+        ('TOPIC_REQUEST_APPROVED', 'Topic Request Approved'),
+        ('TOPIC_REQUEST_REJECTED', 'Topic Request Rejected'),
+        ('TOPIC_REQUEST_UPDATED', 'Topic Request Updated'),
+        ('NEW_TOPIC', 'New Topic Created'),
+        ('NEW_REPLY', 'New Reply to Topic'),
+        ('TOPIC_SUBSCRIPTION', 'Topic Subscription Update'),
+        ('FORUM_MENTION', 'Forum Mention'),
+        # Permission-related notifications
+        ('PERMISSION_GRANTED', 'Permission Granted'),
+        ('PERMISSION_REVOKED', 'Permission Revoked'),
+        ('PERMISSION_EXPIRED', 'Permission Expired'),
+        ('ADMIN_ACTION', 'Admin Action Performed'),
+        # Enhanced system notifications
+        ('PROFILE_UPDATE', 'Profile Updated'),
+        ('PASSWORD_CHANGE', 'Password Changed'),
+        ('LOGIN_ALERT', 'Login Alert'),
+        ('SECURITY_ALERT', 'Security Alert'),
+        ('BACKUP_COMPLETE', 'Backup Complete'),
+        ('SYSTEM_UPDATE', 'System Update'),
     ]
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
-    notification_type = models.CharField(max_length=20, choices=NOTIFICATION_TYPES)
+    notification_type = models.CharField(max_length=30, choices=NOTIFICATION_TYPES)
     title = models.CharField(max_length=200)
     message = models.TextField()
     is_read = models.BooleanField(default=False)

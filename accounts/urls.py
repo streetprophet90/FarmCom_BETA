@@ -35,6 +35,15 @@ urlpatterns = [
     path('bulk-reject-projects/', views.bulk_reject_projects, name='bulk_reject_projects'),
     path('mark-notification-read/<int:notification_id>/', views.mark_notification_read, name='mark_notification_read'),
     path('mark-all-notifications-read/', views.mark_all_notifications_read, name='mark_all_notifications_read'),
+    # Enhanced notification AJAX endpoints
+    path('notifications/ajax/mark-read/<int:notification_id>/', views.mark_notification_read_ajax, name='mark_notification_read_ajax'),
+    path('notifications/ajax/mark-all-read/', views.mark_all_notifications_read_ajax, name='mark_all_notifications_read_ajax'),
+    path('notifications/ajax/get/', views.get_notifications_ajax, name='get_notifications_ajax'),
+    # Notification settings
+    path('notification-settings/', views.notification_settings, name='notification_settings'),
+    path('update-notification-settings/', views.update_notification_settings, name='update_notification_settings'),
+    path('update-notification-frequency/', views.update_notification_frequency, name='update_notification_frequency'),
+    path('test-notification/', views.test_notification, name='test_notification'),
     path('audit-logs/', views.audit_logs, name='audit_logs'),
     path('admin-analytics/', views.admin_analytics, name='admin_analytics'),
     path('generate-report/', views.generate_report, name='generate_report'),
