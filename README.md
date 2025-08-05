@@ -81,6 +81,15 @@ By fostering collaboration among these stakeholders, FarmCom cultivates crops, b
 - **Audit Logging**: Complete trail of all permission usage
 - **Permission Templates**: Quick setup for common roles (Forum Moderator, Land Approver, etc.)
 
+### 🔔 **Enhanced Notification System** *(NEW)*
+- **Real-time Notifications**: AJAX-powered live updates with badges and sound alerts
+- **User Preferences**: Customizable email, push, and sound notification settings
+- **Notification Frequency**: Choose between immediate, hourly, daily, or weekly digests
+- **Email Integration**: Automatic email notifications for important updates
+- **Notification Center**: Centralized management interface for all notifications
+- **Test Functionality**: Built-in notification testing for system verification
+- **Enhanced Types**: Support for forums, permissions, system events, and user activities
+
 ### 🎨 **User Interface**
 - **Modern Design**: Clean, responsive Bootstrap-based interface
 - **Ghanaian Theme**: Culturally relevant design elements
@@ -153,10 +162,13 @@ By fostering collaboration among these stakeholders, FarmCom cultivates crops, b
 ```
 FarmCom_BETA/
 ├── accounts/                 # User management app
-│   ├── models.py            # Custom User model with roles
-│   ├── views.py             # User views, dashboards, analytics
+│   ├── models.py            # Custom User model with roles and notification preferences
+│   ├── views.py             # User views, dashboards, analytics, notification management
 │   ├── forms.py             # Registration and profile forms
 │   ├── admin.py             # Admin interface customization
+│   ├── notification_utils.py # Enhanced notification utility functions
+│   ├── utils.py             # URL routing utilities
+│   ├── context_processors.py # Dashboard URL context processor
 │   └── management/          # Custom management commands
 │       └── commands/
 │           ├── load_sample_data.py
@@ -212,7 +224,9 @@ FarmCom_BETA/
 │   │   ├── worker_dashboard.html
 │   │   ├── investor_dashboard.html
 │   │   ├── student_dashboard.html
-│   │   └── admin_dashboard.html
+│   │   ├── admin_dashboard.html
+│   │   ├── notifications.html # Notification center *(NEW)*
+│   │   └── notification_settings.html # Notification preferences *(NEW)*
 │   ├── lands/               # Land templates
 │   ├── farming/             # Farming templates
 │   ├── marketplace/         # Marketplace templates
@@ -236,7 +250,8 @@ FarmCom_BETA/
 ├── manage.py                # Django management script
 ├── README.md                # Project documentation
 ├── FARMCOM_RECOMMENDATIONS.md  # Development roadmap
-└── DASHBOARD_ENHANCEMENTS_PROGRESS.md  # Progress tracking
+├── DASHBOARD_ENHANCEMENTS_PROGRESS.md  # Progress tracking
+└── COMMUNITY_NEWS_README.md # Community news management documentation
 ```
 
 ## 🌍 Ghanaian Agricultural Focus
@@ -267,7 +282,7 @@ EMAIL_HOST_PASSWORD=your-app-password
 ```
 
 ### Database Configuration
-The project uses SQLite by default. For production, consider using PostgreSQL or MySQL.
+The project uses PostgreSQL for production with SQLite as development fallback.
 
 ## 🧪 Testing
 
@@ -285,8 +300,18 @@ The application provides RESTful endpoints for:
 - Marketplace operations
 - Discussion forums with CRUD operations
 - Permission management and delegation
+- Enhanced notification system with user preferences
 
 ## 🚀 Recent Updates (July 19, 2025)
+
+### ✅ **Enhanced Notification System**
+- Real-time notification updates via AJAX
+- Notification badges and sound alerts
+- Email notification integration
+- User notification preferences (email, push, sound, frequency)
+- Notification center with management interface
+- Test notification functionality
+- Enhanced notification types for forums, permissions, and system events
 
 ### ✅ **Discussion Forums System**
 - Complete CRUD operations for topics
@@ -350,4 +375,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**FarmCom** - Empowering Ghanaian Agriculture Through Technology 🌱🇬🇭
+**FarmCom** - Where Opportunity Grows --Empowering Ghanaian Agriculture Through Technology 🌱🇬🇭
