@@ -375,4 +375,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**FarmCom** - Where Opportunity Grows --Empowering Ghanaian Agriculture Through Technology 🌱🇬🇭
+**FarmCom** - Where Opportunity Grows -- Empowering Ghanaian Agriculture Through Technology 🌱🇬🇭

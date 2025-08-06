@@ -44,6 +44,8 @@ INSTALLED_APPS = [
     'payments',
     'forums',
     'user_permissions',
+    'knowledge_base',
+    'events',
     'farmcom',
 ]
 

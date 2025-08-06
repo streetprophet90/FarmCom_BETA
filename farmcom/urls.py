@@ -37,6 +37,8 @@ urlpatterns = [
     path('marketplace/', include('marketplace.urls')),
     path('forums/', include('forums.urls')),
     path('permissions/', include('user_permissions.urls')),
+    path('knowledge/', include('knowledge_base.urls')),
+    path('events/', include('events.urls')),
     path('login/', custom_login, name='login'),
     path('logout/', custom_logout, name='logout'),  # Add logout URL at root level
     path('contact/', contact_support, name='contact_support'),

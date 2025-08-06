@@ -1,0 +1,231 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Knowledge Base - FarmCom{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="text-success">
+                <i class="fas fa-book-open"></i> Knowledge Base
+            </h1>
+            <p class="lead">Discover farming techniques, best practices, and agricultural insights for Ghanaian farmers.</p>
+        </div>
+    </div>
+
+    <!-- Search and Filters -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-4">
+                            <label for="{{ search_form.query.id_for_label }}" class="form-label">Search</label>
+                            {{ search_form.query }}
+                        </div>
+                        <div class="col-md-2">
+                            <label for="{{ search_form.category.id_for_label }}" class="form-label">Category</label>
+                            {{ search_form.category }}
+                        </div>
+                        <div class="col-md-2">
+                            <label for="{{ search_form.difficulty.id_for_label }}" class="form-label">Level</label>
+                            {{ search_form.difficulty }}
+                        </div>
+                        <div class="col-md-2">
+                            <label for="{{ search_form.sort_by.id_for_label }}" class="form-label">Sort By</label>
+                            {{ search_form.sort_by }}
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">&nbsp;</label>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-search"></i> Search
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Featured Articles -->
+    {% if featured_articles %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <h3 class="text-success">
+                <i class="fas fa-star"></i> Featured Articles
+            </h3>
+            <div class="row">
+                {% for article in featured_articles %}
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100 border-success">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ article.title }}</h5>
+                            <p class="card-text">{{ article.excerpt|truncatewords:20 }}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    <i class="fas fa-user"></i> {{ article.author.username }}
+                                </small>
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar"></i> {{ article.published_at|date:"M d, Y" }}
+                                </small>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-success text-white">
+                            <a href="{{ article.get_absolute_url }}" class="btn btn-light btn-sm">
+                                Read More <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Categories -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h3 class="text-success">
+                <i class="fas fa-folder"></i> Browse by Category
+            </h3>
+            <div class="row">
+                {% for category in categories %}
+                <div class="col-md-4 col-lg-2 mb-3">
+                    <a href="{{ category.get_absolute_url }}" class="text-decoration-none">
+                        <div class="card text-center h-100 border-{{ category.color }}">
+                            <div class="card-body">
+                                <i class="{{ category.icon }} fa-2x text-{{ category.color }} mb-2"></i>
+                                <h6 class="card-title">{{ category.name }}</h6>
+                                <small class="text-muted">{{ category.articles.count }} articles</small>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Articles List -->
+    <div class="row">
+        <div class="col-12">
+            <h3 class="text-success">
+                <i class="fas fa-list"></i> All Articles
+            </h3>
+            
+            {% if articles %}
+            <div class="row">
+                {% for article in articles %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ article.title }}</h5>
+                            <p class="card-text">{{ article.excerpt|truncatewords:25 }}</p>
+                            
+                            <!-- Tags -->
+                            {% if article.tags.all %}
+                            <div class="mb-2">
+                                {% for tag in article.tags.all %}
+                                <span class="badge bg-{{ tag.color }} me-1">{{ tag.name }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            
+                            <!-- Meta Info -->
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    <i class="fas fa-user"></i> {{ article.author.username }}
+                                </small>
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar"></i> {{ article.published_at|date:"M d, Y" }}
+                                </small>
+                            </div>
+                            
+                            <!-- Stats -->
+                            <div class="mt-2">
+                                <small class="text-muted">
+                                    <i class="fas fa-eye"></i> {{ article.views }} views
+                                    <i class="fas fa-heart ms-2"></i> {{ article.likes }} likes
+                                </small>
+                            </div>
+                        </div>
+                        <div class="card-footer">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <a href="{{ article.get_absolute_url }}" class="btn btn-success btn-sm">
+                                    Read Article <i class="fas fa-arrow-right"></i>
+                                </a>
+                                <span class="badge bg-{{ article.difficulty|lower }}">
+                                    {{ article.difficulty }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Pagination -->
+            {% if is_paginated %}
+            <nav aria-label="Knowledge base pagination">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1">&laquo; First</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                    </li>
+                    {% endif %}
+                    
+                    <li class="page-item active">
+                        <span class="page-link">
+                            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                        </span>
+                    </li>
+                    
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last &raquo;</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+            
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                <h4 class="text-muted">No articles found</h4>
+                <p class="text-muted">Try adjusting your search criteria or browse our categories.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Popular Tags -->
+    {% if popular_tags %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <h3 class="text-success">
+                <i class="fas fa-tags"></i> Popular Tags
+            </h3>
+            <div class="d-flex flex-wrap gap-2">
+                {% for tag in popular_tags %}
+                <a href="{{ tag.get_absolute_url }}" class="text-decoration-none">
+                    <span class="badge bg-{{ tag.color }} fs-6">{{ tag.name }}</span>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %} 
